@@ -1,0 +1,72 @@
+//Any:AnyPrettyIO 
+ProjectAttributes (
+	DependenciesFile           : "dependencies.incl",
+	FileCount                  : 7,
+	FileSet                    : array (
+		"Makefile",
+		"cmds.cxx",
+		"main.cxx",
+		"precompile.cxx",
+		"main.h",
+		"version.h",
+		"openam.proj"
+	),
+	FileTypes                  : struct (
+		Header              : File_Types_Info (
+			Icon                     : "$SNIFF_DIR/config/icons/FT_header.gif",
+			"Is Default File Type"     : true,
+			Name                     : "Header",
+			Parser                   : "SNiFF-C++",
+			"Retriever Priority"       : "1",
+			Signatures               : "*.h:*.H:*.hh:*.HH:*.hpp:*.HPP:*.hxx:*.HXX:*.ci",
+			"Tool Names"               : "Edit:Set Writable:Set Read Only:Properties",
+			Tools                    : "SniffEdit:SniffSetWritable:SniffSetReadOnly:ls -l %f",
+			Type                     : "Header"
+		),
+		Implementation      : File_Types_Info (
+			"General Makefile"         : "$SNIFF_DIR/make_support/general.c.mk",
+			Icon                     : "$SNIFF_DIR/config/icons/FT_source.gif",
+			"Is Default File Type"     : true,
+			Name                     : "Implementation",
+			Parser                   : "SNiFF-C++",
+			"Retriever Priority"       : "2",
+			Signatures               : "*.c:*.C:*.cc:*.CC:*.cpp:*.CPP:*.cxx:*.CXX",
+			"Tool Names"               : "Edit:Set Writable:Set Read Only:Properties",
+			Tools                    : "SniffEdit:SniffSetWritable:SniffSetReadOnly:ls -l %f",
+			Type                     : "Implementation"
+		),
+		Make                : File_Types_Info (
+			"Create Symbolic Link"     : true,
+			Icon                     : "$SNIFF_DIR/config/icons/FT_make.gif",
+			"Is Default File Type"     : true,
+			Name                     : "Make",
+			"Retriever Priority"       : "6",
+			Signatures               : "Makefile:makefile:*.mk:*.MAK:MAKEFILE:*.cron",
+			"Tool Names"               : "Edit:Set Writable:Set Read Only:Properties",
+			Tools                    : "SniffEdit:SniffSetWritable:SniffSetReadOnly:ls -l %f",
+			Type                     : "Make"
+		),
+		"Project Description" : File_Types_Info (
+			Icon                     : "$SNIFF_DIR/config/icons/FT_pdf.gif",
+			"Is Default File Type"     : true,
+			Name                     : "Project Description",
+			"Retriever Priority"       : "8",
+			Signatures               : "*.proj:*.shared",
+			"Tool Names"               : "Open Project:Edit PDF:Set Writable:Set Read Only:Properties",
+			Tools                    : "SniffOpen:SniffEdit:SniffSetWritable:SniffSetReadOnly:ls -l %f",
+			Type                     : "Project"
+		)
+	),
+	GenerateDir                : ".sniffdir",
+	HelpTarget                 : "all:symbolic_links:clean:clean_targets:help",
+	IgnoreStringsFile          : "/home/jan/sniff_ignore",
+	IncludeFilesFile           : "include.incl",
+	IncludeMacro               : array ( ),
+	MacrosFile                 : "macros.incl",
+	ObjectFilesFile            : "ofiles.incl",
+	PreprocessorSwitch         : array ( ),
+	ProjectDir                 : "/home/jan/voip_compile/ohcvs/contrib/openam",
+	Release                    : "V3.0",
+	TabLength                  : 4,
+	VPathFile                  : "vpath.incl"
+)

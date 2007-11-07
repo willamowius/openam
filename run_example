@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Uncomment a line below to disable the codec
+#CODEC="$CODEC -DGSM"
+#CODEC="$CODEC -D711"
+#CODEC="$CODEC -DLPC"
+#CODEC="$CODEC -DMS"
+#CODEC="$CODEC -DGSM"
+
+# by default, disable gatekeeper
+./openam $CODEC -n -m sample_message -r `pwd`/new_msg

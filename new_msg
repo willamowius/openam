@@ -1,0 +1,74 @@
+#!/bin/sh
+
+#
+#  new_msg script for use with OpenAM
+#  Copyright (C) Equivalence Pty Ltd 1999
+#
+#  Permission is given to freely copy, redistribute or change this
+#  program, provided this notice is retained intact.
+#
+#  The information and code herein is provided "as is"
+#  without warranty of any kind, either expressed or implied.
+#  In no event shall EQUIVALENCE be liable for any damages
+#  whatsoever including direct, indirect, incidental,
+#  consequential, loss of business profits or special damages,
+#  even if EQUIVALENCE has been advised of the possibility of such damages.
+#
+
+extension="wav"
+contenttype="audio/x-wav"
+
+mimencode=/usr/bin/mimencode
+sendmail=/usr/lib/sendmail
+sox=/usr/bin/sox
+
+fn="$1"
+src="$2"
+remoteParty="$3"
+duration="$4"
+codec="$5"
+product="$6"
+
+#tempfn=${fn}.tmp
+tempfn=/tmp/voice.temp
+
+#email=equival@equival.com.au
+email="${USER}@`dnsdomainname`"
+sourceemail=h323voice
+
+seperator="========== $$fn =========="
+
+echo Date: `date` > $tempfn
+echo To: $email >> $tempfn
+echo From: ${sourceemail}@`hostname` >> $tempfn
+echo Subject: H323 voice message from \""$remoteParty"\" >> $tempfn
+echo Mime-Version: 1.0 >> $tempfn
+echo Content-Type: multipart/mixed\; boundary=\"$seperator\" >> $tempfn
+echo "">> $tempfn
+
+echo --$seperator >> $tempfn
+echo Content-Type: text/plain\ >> $tempfn
+echo Content-Transfer-Encoding: 8bit >> $tempfn
+echo "">> $tempfn
+
+echo "Filename:    $fn" >> $tempfn
+echo "Source:      $src" >> $tempfn
+echo "RemoteParty: $remoteParty" >> $tempfn
+echo "Duration:    $duration" >> $tempfn
+echo "Codecs:      $codec" >> $tempfn
+echo "Product:     $product" >> $tempfn
+echo "">> $tempfn
+
+echo --$seperator >> $tempfn
+echo Content-Type: $contenttype\; name=\"$pagefn\" >> $tempfn
+echo Content-Transfer-Encoding: base64 >> $tempfn
+echo Content-Disposition: attachment\; filename=\"$pagefn\" >> $tempfn
+echo "">> $tempfn
+$mimencode $fn >> $tempfn
+
+#rm -f $fn
+
+echo --$seperator >> $tempfn
+
+$sendmail < $tempfn $email 
+rm -f $tempfn 
