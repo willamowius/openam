@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.1  2007/11/07 03:42:13  willamowius
+ * port OpenAM to H323Plus
+ *
  * Revision 1.102  2006/04/19 04:11:53  csoutheren
  * Fix problem when outputting CIF stream using QCIF source
  *
@@ -469,7 +472,7 @@ BOOL WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
 	
 	if( dwCtrlType == CTRL_LOGOFF_EVENT ) {
 		eventName = "CTRL_LOGOFF_EVENT";
-		LogMessage("OpenAM received " << eventName);
+        LogMessage("OpenAM received " + eventName);
 		// prevent shut down
 		return FALSE;
 	}
@@ -482,7 +485,7 @@ BOOL WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
 		eventName = "CTRL_CLOSE_EVENT";
 	else if( dwCtrlType == CTRL_SHUTDOWN_EVENT )
 		eventName = "CTRL_SHUTDOWN_EVENT";
-	LogMessage("OpenAM shutdown due to " << eventName);
+	LogMessage("OpenAM shutdown due to " + eventName);
 
 	OpenAm::Shutdown();	
 	exit(1);

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="openam"
+	ProjectGUID="{522AFC0A-713A-4A87-8C14-AF9D722C2575}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -38,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="openh323.lib ptlib.lib"
+				AdditionalDependencies="h323plus.lib ptlibs.lib"
 				OutputFile=".\Release/openam.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -101,7 +102,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="openh323d.lib ptlibd.lib"
+				AdditionalDependencies="h323plusd.lib ptlibsd.lib"
 				OutputFile=".\Debug/openam.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -166,7 +167,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="openh323n.lib ptlib.lib"
+				AdditionalDependencies="h323plusn.lib ptlibs.lib"
 				OutputFile=".\NoTrace/openam.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
