@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.2  2007/11/07 05:58:37  shorne
+ * Fixed Windows compile
+ *
  * Revision 1.1  2007/11/07 03:42:13  willamowius
  * port OpenAM to H323Plus
  *
@@ -407,9 +410,6 @@ PString PCMExt(".sw");
 
 #if OPENAM_VIDEO
 #include <ptclib/pvfiledev.h>
-#ifdef H323_RFC2190_AVCODEC
-#include "rfc2190avcodec.h"
-#endif // H323_RFC2190_AVCODEC
 
 PString VideoGrabberDriverName("YUVFile");
 

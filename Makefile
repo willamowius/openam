@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log$
+# Revision 1.1  2007/11/07 03:42:12  willamowius
+# port OpenAM to H323Plus
+#
 # Revision 1.9  2002/08/05 10:10:29  robertj
 # Normalised Makefile usage of openh323u.mak include file, fixing odd messages.
 #
@@ -58,7 +61,7 @@
 #
 
 PROG		= openam
-SOURCES		:= main.cxx cmds.cxx
+SOURCES		:= main.cxx
 
 ifndef OPENH323DIR
 OPENH323DIR=$(HOME)/openh323
@@ -66,8 +69,3 @@ endif
 
 include $(OPENH323DIR)/openh323u.mak
 
-record:	record.c
-	$(CC) -o $@ $<
-
-playback:	playback.c
-	$(CC) -o $@ $<
