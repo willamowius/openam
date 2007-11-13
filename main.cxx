@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.3  2007/11/13 13:18:24  willamowius
+ * cleanup
+ *
  * Revision 1.2  2007/11/07 05:58:37  shorne
  * Fixed Windows compile
  *
@@ -428,8 +431,6 @@ static const char * VideoModes[PVideoInputDevice_YUVFile::ChannelCount] = {
 
 #endif // OPENAM_VIDEO
 
-#define new PNEW
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -647,18 +648,6 @@ void OpenAm::Main()
   }
 
   args.Save("save");
-
-#ifdef HAS_IXJ
-  if (args.GetCount() > 0) {
-    if (args[0] *= "record") 
-      RecordFile(args);
-    else if (args[0] *= "play") 
-      PlayFile(args);
-    else
-      cerr << "unknown command \"" << args[0] << "\"" << endl;
-    return;
-  }
-#endif
 
   unsigned callLimit = DEFAULT_MSG_LIMIT;
   if (args.HasOption('l')) {
@@ -1434,7 +1423,7 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
       }
       else
         ogmChannel->QueueFile(ogm);
-      if (!ep.GetNoRecordG7231())
+      if (!(ep.GetNoRecordG7231() || ep.GetLoopMessage()))
         ogmChannel->SetRecordTrigger();
     }
     codec.AttachChannel(ogmChannel, FALSE);
@@ -1450,7 +1439,6 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
 
 BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
 {
-  // video reception not support as yet
   if (!isEncoding) {
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
@@ -1459,7 +1447,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
 	else
 		display = new PVideoOutputDevice_YUVFile();   
     if (display == NULL) {
-      PTRACE(3, "Cannot create video output device for driver NULLOutput");
+      PTRACE(3, "Cannot create video output device");
       return FALSE;
     }
 
@@ -1769,8 +1757,6 @@ PCM_OGMChannel::PCM_OGMChannel(MyH323Connection & _conn)
 void PCM_OGMChannel::PlayFile(PFile * chan)
 { 
   PWaitAndSignal mutex(chanMutex);
-//  if (IsOpen())
-//    Close();
 
   if (!chan->Open(PFile::ReadOnly)) {
     PTRACE(1, "Cannot open file \"" << chan->GetName() << "\"");
@@ -1879,7 +1865,6 @@ BOOL PCM_OGMChannel::Read(void * buffer, PINDEX amount)
       } else {
 
         PTRACE(1, "Finished playing " << totalData << " bytes");
-        //closed = TRUE;
   
         PIndirectChannel::Close();
         silentCount = 5;   // always do 5 frames of silence after every file
