@@ -70,10 +70,6 @@ made up of the time and date of the recording. Eg:
 Windows users can easily replay messages recorded from a G.723.1 codec
 call in the Windows Media Player.
 
-Owners of Quicknet cards (eg LineJack and PhoneJack) can also play messages
-recored from a G.723.1 codec call using their Quicknet cards and the
-OpenAM play command. This is handy for Linux and FreeBSD users.
-
 Unix users (without Quicknet cards) cannot play G.723.1 files so they may
 prefer to use this command, which does not enable G.723.1 in OpenAM.
 
@@ -149,33 +145,6 @@ OpenAM has the following command line options:
 -h
 --help                Display this help message
 
-People with Quicknet PhoneJack/LineJack cards can also use the following
-two commands
-
-play -qN [--pcm|--g7231] [--port n] filename
-                     Plays the file back via the Quicknet card 'N'
-                     (ie /dev/phoneN). This can play .wav files
-                     (both PCM and G.723.1 wav files) and also .sw and .g723
-                     files. The --pcm and --g7231 options are used if OpenAM
-                     cannot determine the file type.
-                     The --port option is used to select the output which is
-                     1 for a POTS telephone
-                     2 for the PSTN line on a LineJack card and
-                     3 for the speaker socket.
-                                    
-record -qN [--pcm|--g7231] [--port n] filename
-                     Records a file via the Quicknet card 'N'
-                     (ie /dev/phoneN). This can record .wav files
-                     (both PCM and G.723.1 wav files) and also .sw and .g723
-                     files. The --pcm or --g7231 option must be used when
-                     recording a .wav file to specify the file type.
-                     These options are also used if OpenAM cannot determine
-                     the file type from the file extension.
-                     The --port option is used to select the source which is
-                     1 for a POTS telephone
-                     2 for the PSTN line on a LineJack card and
-                     3 for the speaker socket.
-                                    
 
 6. OGM and record file formats
 ------------------------------
