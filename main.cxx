@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.5  2007/11/13 14:03:45  willamowius
+ * fix message about recording limit
+ *
  * Revision 1.4  2007/11/13 13:51:04  willamowius
  * more cleanup
  *
@@ -951,9 +954,15 @@ BOOL MyH323EndPoint::Initialise(PConfigArgs & args)
   else {
     cout << "Using \"" << ilbcOgm << "\" as iLBC outgoing message\n";
   }
+
+#if OPENAM_VIDEO
+  // Check for video message
+  videoOgm = args.GetOptionString("videomessage");
+#endif
+  
   if (g7231Ogm.IsEmpty() && gsmOgm.IsEmpty() && g711Ogm.IsEmpty()
-                         && lpc10Ogm.IsEmpty() 
-			 && speexOgm.IsEmpty()
+                         && lpc10Ogm.IsEmpty() && speexOgm.IsEmpty()
+                         && videoOgm.IsEmpty()
 			 ) {
     cerr << "Must specify at least one outgoing message" << endl;
     return FALSE;
@@ -962,9 +971,6 @@ BOOL MyH323EndPoint::Initialise(PConfigArgs & args)
   AddAllCapabilities(0, 0, "*");
 
 #if OPENAM_VIDEO
-
-  // Check for video message
-  videoOgm = args.GetOptionString("videomessage");
   if (!videoOgm.IsEmpty()) {
 
     autoStartTransmitVideo = TRUE;
