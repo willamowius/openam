@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.4  2007/11/13 13:51:04  willamowius
+ * more cleanup
+ *
  * Revision 1.3  2007/11/13 13:18:24  willamowius
  * cleanup
  *
@@ -658,7 +661,10 @@ void OpenAm::Main()
     } else if (callLimit == 0)
       cout << "warning: recorded message call limit disabled\n";
   }
-  cout << "Recorded messages limited to " << callLimit << " seconds\n";
+  if (!args.HasOption("no-recordg7231") && !args.HasOption("loop"))
+	  cout << "Recorded messages limited to " << callLimit << " seconds\n";
+  else
+	  cout << "Recording disabled\n";
 
   PString runCmd;
   if (args.HasOption('r')) {
