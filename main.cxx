@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.6  2007/11/13 14:37:05  willamowius
+ * allow operation without audio OGM, only with video OGM
+ *
  * Revision 1.5  2007/11/13 14:03:45  willamowius
  * fix message about recording limit
  *
@@ -1960,6 +1963,10 @@ void PCM_OGMChannel::FlushQueue()
 
 BOOL PCM_OGMChannel::AdjustFrame(void * buffer, PINDEX amount)
 {
+  // reduce read size for very short frame
+  if ((amount > frameLen) && (frameOffs == 0))
+	amount = frameLen;
+
   if ((frameOffs + amount) > frameLen) {
     cerr << "Reading past end of frame:offs=" << frameOffs << ",amt=" << amount << ",len=" << frameLen << endl;
     return TRUE;
