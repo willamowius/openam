@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.9  2007/11/14 13:12:44  willamowius
+ * trace message which output device is being created
+ *
  * Revision 1.8  2007/11/14 11:53:47  willamowius
  * delete endpoint object on shutdown
  *
@@ -1462,12 +1465,21 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
 
 BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
 {
+  PString capture_filename("video_capture.yuv");
   if (!isEncoding) {
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
 	if (ep.GetLoopMessage()) {	// just loop message, no recording
-		PTRACE(3, "Try to create NULLOutput device");
-		display = PVideoOutputDevice::CreateDevice("NULLOutput");
+		// TODO: this would be better, but fails when building with 'make optnoshared'
+		// PTRACE(3, "Try to create NULLOutput device");
+		// display = PVideoOutputDevice::CreateDevice("NULLOutput");
+		display = new PVideoOutputDevice_YUVFile();
+		PTRACE(3, "Try to create YUVFile device on NULL device");
+#ifdef _WIN32
+		capture_filename = "NUL:";
+#else
+		capture_filename = "/dev/null";
+#endif
 	} else {
 		PTRACE(3, "Try to create YUVFile device");
 		display = new PVideoOutputDevice_YUVFile();
@@ -1477,7 +1489,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
       return FALSE;
     }
 
-    if (!display->Open("video_capture.yuv")) {
+    if (!display->Open(capture_filename)) {
       delete display;
       return FALSE;
     }
