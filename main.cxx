@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.8  2007/11/14 11:53:47  willamowius
+ * delete endpoint object on shutdown
+ *
  * Revision 1.7  2007/11/13 14:58:54  willamowius
  * reduce read size for very short frame so G7231 OGMs work again
  *
@@ -1462,10 +1465,13 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
   if (!isEncoding) {
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
-	if (ep.GetLoopMessage())	// just loop message, no recording
+	if (ep.GetLoopMessage()) {	// just loop message, no recording
+		PTRACE(3, "Try to create NULLOutput device");
 		display = PVideoOutputDevice::CreateDevice("NULLOutput");
-	else
-		display = new PVideoOutputDevice_YUVFile();   
+	} else {
+		PTRACE(3, "Try to create YUVFile device");
+		display = new PVideoOutputDevice_YUVFile();
+	}   
     if (display == NULL) {
       PTRACE(3, "Cannot create video output device");
       return FALSE;
