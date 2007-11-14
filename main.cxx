@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.11  2007/11/14 14:16:43  willamowius
+ * always print message about call start/end to stdout
+ *
  * Revision 1.10  2007/11/14 14:09:32  willamowius
  * avoid using NULLOutput device since it doesn't work with 'make optnoshared'
  *
@@ -1814,83 +1817,75 @@ BOOL PCM_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
 
 BOOL PCM_OGMChannel::Read(void * buffer, PINDEX amount)
 {
-  PWaitAndSignal mutex(chanMutex);
+	PWaitAndSignal mutex(chanMutex);
 
-  // if the channel is closed, then return error
-  if (closed)
-    return FALSE;
+	// if the channel is closed, then return error
+	if (closed)
+		return FALSE;
 
-  // Create the frame buffer using the amount of bytes the codec wants to
-  // read. Different codecs use different read sizes.
-  frameBuffer.SetMinSize(1024);//amount);
+	// Create the frame buffer using the amount of bytes the codec wants to
+	// read. Different codecs use different read sizes.
+	frameBuffer.SetMinSize(1024);//amount);
 
-  // assume we are returning silence
-  BOOL doSilence = TRUE;
-  BOOL frameBoundary = FALSE;
+	// assume we are returning silence
+	BOOL doSilence = TRUE;
+	BOOL frameBoundary = FALSE;
 
-  // if still outputting a frame from last time, then keep doing it
-  if (frameOffs < frameLen) {
-    frameBoundary = AdjustFrame(buffer, amount);
-    doSilence = FALSE;
+	// if still outputting a frame from last time, then keep doing it
+	if (frameOffs < frameLen) {
+		frameBoundary = AdjustFrame(buffer, amount);
+		doSilence = FALSE;
+	} else {
+		// if we are returning silence frames, then 
+		if (silentCount > 0) 
+			silentCount--;
+		// if a channel is already open, don't do silence
+		else if (GetBaseReadChannel() != NULL)
+			doSilence = FALSE;
 
-  } else {
+		// If not in silence and no existing channel, open a new file.
+		else {
+			PString * str = playQueue.Dequeue();
+			if (str != NULL) {
 
-    // if we are returning silence frames, then 
-    if (silentCount > 0) 
-      silentCount--;
+				// check the file extension and open a .wav or a raw (.sw or .g723) file
+				if (((*str).Right(4)).ToLower() == ".wav") {
+				PWAVFile *chan = new PWAVFile(*str, PFile::ReadOnly);
+				if (!chan->IsOpen()) {
+					PTRACE(1, "Cannot open file \"" << chan->GetName() << "\"");
+					delete chan;
+				} else {
+					if (!IsWAVFileValid(chan) ) {
+						PTRACE(1, chan->GetName() << " is not a valid wav file");
+						delete chan;
+						cerr << "wave file is invalid" << endl;
+					} else {
+						PTRACE(1, "Playing file \"" << chan->GetName() << "\"");
+						totalData = 0;
+						SetReadChannel(chan, TRUE);
+						doSilence = FALSE;
+					}
 
-    // if a channel is already open, don't do silence
-    else if (GetBaseReadChannel() != NULL)
-      doSilence = FALSE;
-
-    // If not in silence and no existing channel, open a new file.
-    else {
-      PString * str = playQueue.Dequeue();
-      if (str != NULL) {
-
-        // check the file extension and open a .wav or a raw (.sw or .g723) file
-
-        if (((*str).Right(4)).ToLower() == ".wav") {
-          PWAVFile *chan;
-          chan = new PWAVFile(*str, PFile::ReadOnly);
-          if (!chan->IsOpen()) {
-            PTRACE(1, "Cannot open file \"" << chan->GetName() << "\"");
-            delete chan;
-          } else {
-	          if (!IsWAVFileValid(chan) ){
-              PTRACE(1, chan->GetName() << " is not a valid wav file");
-              delete chan;
-              cerr << "wave file is invalid" << endl;
-            } else {
-              PTRACE(1, "Playing file \"" << chan->GetName() << "\"");
-              totalData = 0;
-              SetReadChannel(chan, TRUE);
-              doSilence = FALSE;
-            }
-
-			if (loopMessage) {
-              PTRACE(1, "Looping file \"" << *str << "\"");
-              playQueue.Enqueue(new PString(*str));
+					if (loopMessage) {
+						PTRACE(1, "Looping file \"" << *str << "\"");
+						playQueue.Enqueue(new PString(*str));
+					}
+				}
+			} else { // raw file (eg .sw)
+				PFile *chan = new PFile(*str);
+				if (!chan->Open(PFile::ReadOnly)) {
+					PTRACE(1, "Cannot open file \"" << chan->GetName() << "\"");
+					delete chan;
+				} else {
+					PTRACE(1, "Playing file \"" << chan->GetName() << "\"");
+					totalData = 0;
+					SetReadChannel(chan, TRUE);
+					doSilence = FALSE;
+				}
 			}
-	  }
-
-        } else { // raw file (eg .sw)
-          PFile *chan;
-          chan = new PFile(*str);
-          if (!chan->Open(PFile::ReadOnly)) {
-            PTRACE(1, "Cannot open file \"" << chan->GetName() << "\"");
-            delete chan;
-          } else {
-            PTRACE(1, "Playing file \"" << chan->GetName() << "\"");
-            totalData = 0;
-            SetReadChannel(chan, TRUE);
-            doSilence = FALSE;
-          }
-        }
-        delete str;
-      }
-    }
-  
+			delete str;
+		}
+	}
 
     // if not doing silence, try and read from the file
     if (!doSilence) {

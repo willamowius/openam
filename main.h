@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.1  2007/11/07 03:42:15  willamowius
+ * port OpenAM to H323Plus
+ *
  * Revision 1.43  2006/06/26 14:29:40  csoutheren
  * Fixed for new PWLib
  *
@@ -210,13 +213,14 @@ class MyH323EndPoint : public H323EndPoint
                    const PString & runCmd,
                    const PDirectory & dir,
                    int flags);
+	virtual ~MyH323EndPoint() { };
 
     // overrides from H323EndPoint
     virtual H323Connection * CreateConnection(unsigned callReference);
-    BOOL OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
+    virtual BOOL OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
 
     // new functions
-    BOOL Initialise(PConfigArgs & args);
+    virtual BOOL Initialise(PConfigArgs & args);
 
     PString    GetGSMOGM() const            { return gsmOgm; }
     void       SetGSMOGM(const PString & s) { gsmOgm = s; }
@@ -290,13 +294,9 @@ class OpenAm : public PProcess
     ~OpenAm();
 
     void Main();
-    void RecordFile(PArgList & args);
-    void PlayFile(PArgList & args);
     static void Shutdown();
 
   protected:
-    long GetCodec(const PString & codecname);
-    // OpalLineInterfaceDevice * GetDevice(const PString & device);
     static MyH323EndPoint * endpoint;
 };
 
@@ -311,10 +311,10 @@ class PCM_OGMChannel : public PIndirectChannel
   public:
     PCM_OGMChannel(MyH323Connection & conn);
 
-    BOOL Read(void * buffer, PINDEX amount);
-    void PlayFile(PFile * chan);
+    virtual BOOL Read(void * buffer, PINDEX amount);
+    virtual void PlayFile(PFile * chan);
 
-    BOOL Close();
+    virtual BOOL Close();
 
     void QueueFile(const PString & cmd);
     void FlushQueue();
@@ -357,10 +357,10 @@ class G7231_OGMChannel : public PCM_OGMChannel
     G7231_OGMChannel(MyH323Connection & conn);
 
   protected:
-    BOOL ReadFrame(PINDEX amount);
-    void CreateSilenceFrame(PINDEX amount);
-    void Synchronise(PINDEX amount);
-    BOOL IsWAVFileValid(PWAVFile *chan);
+    virtual BOOL ReadFrame(PINDEX amount);
+    virtual void CreateSilenceFrame(PINDEX amount);
+    virtual void Synchronise(PINDEX amount);
+    virtual BOOL IsWAVFileValid(PWAVFile *chan);
 };
 
 
@@ -369,19 +369,18 @@ class MyH323Connection : public H323Connection
   PCLASSINFO(MyH323Connection, H323Connection);
 
   public:
-    PString sourceno;
     MyH323Connection(MyH323EndPoint &, unsigned, unsigned);
-    ~MyH323Connection();
+    virtual ~MyH323Connection();
 
     // overrides from H323Connection
-    BOOL OpenAudioChannel(BOOL, unsigned, H323AudioCodec & codec);
+    virtual BOOL OpenAudioChannel(BOOL, unsigned, H323AudioCodec & codec);
 #if OPENAM_VIDEO
-    BOOL OpenVideoChannel(BOOL, H323VideoCodec & codec);
+    virtual BOOL OpenVideoChannel(BOOL, H323VideoCodec & codec);
 #endif
-    AnswerCallResponse OnAnswerCall(const PString &, const H323SignalPDU &, H323SignalPDU &);
-    BOOL OnStartLogicalChannel(H323Channel & channel);
-    void OnUserInputString(const PString & value);
-    BOOL OnReceivedSignalSetup(const H323SignalPDU & setupPDU);
+    virtual AnswerCallResponse OnAnswerCall(const PString &, const H323SignalPDU &, H323SignalPDU &);
+    virtual BOOL OnStartLogicalChannel(H323Channel & channel);
+    virtual void OnUserInputString(const PString & value);
+    virtual BOOL OnReceivedSignalSetup(const H323SignalPDU & setupPDU);
 
     // new functions
     void StartRecording();
@@ -424,6 +423,7 @@ class MyH323Connection : public H323Connection
     PStringList menuNames;
 
     PString securityToken, e164Number;
+    PString sourceno;
 };
 
 class PCM_RecordFile : public PIndirectChannel
@@ -432,16 +432,16 @@ class PCM_RecordFile : public PIndirectChannel
 
   public:
     PCM_RecordFile(MyH323Connection & conn, const PFilePath & fn, unsigned callLimit);
-    ~PCM_RecordFile();
+    virtual ~PCM_RecordFile();
 
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Close();
-    void StartRecording();
+    virtual BOOL Write(const void * buf, PINDEX len);
+    virtual BOOL Close();
+    virtual void StartRecording();
 
     virtual void DelayFrame(PINDEX len);
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
 
-    BOOL WasRecordStarted() const { return recordStarted; }
+    virtual BOOL WasRecordStarted() const { return recordStarted; }
 
   protected:
     MyH323Connection & conn;
@@ -464,8 +464,8 @@ class G7231_RecordFile : public PCM_RecordFile
 
   public:
     G7231_RecordFile(MyH323Connection & conn, const PFilePath & fn, unsigned callLimit);
-    void DelayFrame(PINDEX len);
-    BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual void DelayFrame(PINDEX len);
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
 };
 
 
