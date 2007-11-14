@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.7  2007/11/13 14:58:54  willamowius
+ * reduce read size for very short frame so G7231 OGMs work again
+ *
  * Revision 1.6  2007/11/13 14:37:05  willamowius
  * allow operation without audio OGM, only with video OGM
  *
@@ -761,8 +764,10 @@ void OpenAm::Main()
 
 void OpenAm::Shutdown()
 {
-	if (endpoint && endpoint->IsRegisteredWithGatekeeper()) {
-		endpoint->RemoveGatekeeper();
+	if (endpoint) {
+		if (endpoint->IsRegisteredWithGatekeeper())
+			endpoint->RemoveGatekeeper();
+		delete endpoint;
 	}
 	exit(0);
 }
