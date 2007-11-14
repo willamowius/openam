@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.10  2007/11/14 14:09:32  willamowius
+ * avoid using NULLOutput device since it doesn't work with 'make optnoshared'
+ *
  * Revision 1.9  2007/11/14 13:12:44  willamowius
  * trace message which output device is being created
  *
@@ -1301,9 +1304,7 @@ BOOL MyH323Connection::OnReceivedSignalSetup(const H323SignalPDU & setupPDU)
 
 MyH323Connection::~MyH323Connection()
 {
-#ifndef DISABLE_COUT
-  cout << "Closing connection" << endl;
-#endif
+  cout << "Call ended" << endl;
 
   PTime now;
   PTimeInterval interval = now - recordStartTime;
@@ -1346,7 +1347,7 @@ MyH323Connection::~MyH323Connection()
 }
 
 H323Connection::AnswerCallResponse
-     MyH323Connection::OnAnswerCall(const PString & /*caller*/,
+     MyH323Connection::OnAnswerCall(const PString & caller,
                                     const H323SignalPDU & setupPDU,
                                     H323SignalPDU & /*connectPDU*/)
 {
@@ -1363,9 +1364,7 @@ H323Connection::AnswerCallResponse
       product = product + "/" + vendorInfo.m_versionId.AsString();
   }
   
-#ifndef DISABLE_COUT
   cout << "Accepting call from " << caller << " using " << product << endl;
-#endif
 
   setupPDU.GetSourceE164(sourceno);
   sourceno.Delete(0,1);
