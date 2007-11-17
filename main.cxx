@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.12  2007/11/14 15:23:59  willamowius
+ * declare overloaded methods as virtual
+ *
  * Revision 1.11  2007/11/14 14:16:43  willamowius
  * always print message about call start/end to stdout
  *
@@ -593,7 +596,6 @@ void OpenAm::Main()
              "-pcm."                 "-no-pcm."
              "-pcmmessage:"          "-no-pcmmessage."
              "-port:"
-             "q-quicknet:"           "-no-quicknet:"
              "r-run:"                "-no-run."
 	           "-recordraw."
              "-require-gatekeeper."  "-no-require-gatekeeper."
@@ -819,6 +821,8 @@ H323Connection * MyH323EndPoint::CreateConnection(unsigned callReference)
 {
   unsigned options = 0;
   options |= H323Connection::H245TunnelingOptionDisable;
+//  options |= H323Connection::FastStartOptionDisable;
+//  options |= H323Connection::H245inSetupOptionDisable;
   return new MyH323Connection(*this, callReference, options);
 }
 
