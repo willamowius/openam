@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.14  2007/11/19 00:28:17  willamowius
+ * limit the video size to size of the provided video OGM
+ *
  * Revision 1.13  2007/11/17 13:52:25  willamowius
  * cleanup
  *
@@ -1512,6 +1515,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
     display->SetFrameSize(codec.GetWidth(), codec.GetHeight()); // needed to enable resize
     display->SetColourFormatConverter("YUV420P");
 
+	PTRACE(1,"Video device opened IN: " << codec.GetMediaFormat() << " : " << codec.GetWidth() << "x" << codec.GetHeight());
     PVideoChannel * channel = new PVideoChannel; 
     channel->AttachVideoPlayer(display); 
     return codec.AttachChannel(channel,TRUE);
@@ -1529,11 +1533,11 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
   //codec.SetBackgroundFill(videoFill);
 
   //if (0 != videoBitRate) {
-  //  codec.SetMaxBitRate(videoBitRate);
-  //  codec.SetVideoMode(
-  //  H323VideoCodec::DynamicVideoQuality | 
-  //  H323VideoCodec::AdaptivePacketDelay |
-  //  codec.GetVideoMode());
+//    codec.SetMaxBitRate(videoBitRate);
+//    codec.SetVideoMode(
+//    H323VideoCodec::DynamicVideoQuality | 
+//    H323VideoCodec::AdaptivePacketDelay |
+//    codec.GetVideoMode());
   //}
 
   //if (0 != frameTimeMs) {
@@ -1557,7 +1561,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
     return FALSE;
   }
 
-  PTRACE(3,"Video device opened");
+  PTRACE(1,"Video device opened OUT: " << codec.GetMediaFormat() << " : " << codec.GetWidth() << "x" << codec.GetHeight());
   grabber->Start();
   channel->AttachVideoReader(grabber);
 
