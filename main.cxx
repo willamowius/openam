@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.13  2007/11/17 13:52:25  willamowius
+ * cleanup
+ *
  * Revision 1.12  2007/11/14 15:23:59  willamowius
  * declare overloaded methods as virtual
  *
@@ -1003,15 +1006,21 @@ BOOL MyH323EndPoint::Initialise(PConfigArgs & args)
 
     OpalMediaFormat::List mediaFormats = H323PluginCodecManager::GetMediaFormats();
 
-    int videoBitRate = 0; //disable setting videoBitRate.
-    if (args.HasOption("videobitrate")) {
-      videoBitRate = args.GetOptionString("videobitrate").AsInteger();
-      videoBitRate = 1024 * PMAX(16, PMIN(2048, videoBitRate));
-    }
+//    int videoBitRate = 0; //disable setting videoBitRate.
+//    if (args.HasOption("videobitrate")) {
+//      videoBitRate = args.GetOptionString("videobitrate").AsInteger();
+//      videoBitRate = 1024 * PMAX(16, PMIN(2048, videoBitRate));
+//    }
 
     videoSize = (PString(DEFAULT_VIDEO_SIZE) *= "qcif") ? 0 : 1;
     if (args.GetOptionString("videosize") *= "cif")
       videoSize = 1;
+	// make the size of the OGM video the the max. allowed size for connecting endpoints
+	H323Capability::CapabilityFrameSize MaxVideoFrame = H323Capability::cifMPI;
+	if (videoSize == 0)
+		MaxVideoFrame = H323Capability::qcifMPI;
+	SetVideoFrameSize(MaxVideoFrame);
+
     videoIsPal = PString(DEFAULT_VIDEO_FORMAT) *= "pal";
     if (args.HasOption("videoformat"))
       videoIsPal = args.GetOptionString("videoformat") *= "pal";
