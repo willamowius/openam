@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.15  2007/11/19 23:23:11  willamowius
+ * trace codec and frame size
+ *
  * Revision 1.14  2007/11/19 00:28:17  willamowius
  * limit the video size to size of the provided video OGM
  *
@@ -1018,11 +1021,6 @@ BOOL MyH323EndPoint::Initialise(PConfigArgs & args)
     videoSize = (PString(DEFAULT_VIDEO_SIZE) *= "qcif") ? 0 : 1;
     if (args.GetOptionString("videosize") *= "cif")
       videoSize = 1;
-	// make the size of the OGM video the the max. allowed size for connecting endpoints
-	H323Capability::CapabilityFrameSize MaxVideoFrame = H323Capability::cifMPI;
-	if (videoSize == 0)
-		MaxVideoFrame = H323Capability::qcifMPI;
-	SetVideoFrameSize(MaxVideoFrame);
 
     videoIsPal = PString(DEFAULT_VIDEO_FORMAT) *= "pal";
     if (args.HasOption("videoformat"))
