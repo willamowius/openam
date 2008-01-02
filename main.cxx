@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.16  2007/11/22 22:31:13  willamowius
+ * remove uneccessary restriction to exactly one frame size
+ *
  * Revision 1.15  2007/11/19 23:23:11  willamowius
  * trace codec and frame size
  *
@@ -1481,7 +1484,7 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
 
 BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
 {
-  PString capture_filename("video_capture.yuv");
+  PString capture_filename(ep.GetDirectory() + (basename + ".yuv"));
   if (!isEncoding) {
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
