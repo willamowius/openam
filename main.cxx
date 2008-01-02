@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.17  2008/01/02 17:12:53  willamowius
+ * assign different name to each recorded video (same as with audio files)
+ *
  * Revision 1.16  2007/11/22 22:31:13  willamowius
  * remove uneccessary restriction to exactly one frame size
  *
@@ -1517,7 +1520,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
     display->SetColourFormatConverter("YUV420P");
 
 	PTRACE(1,"Video device opened IN: " << codec.GetMediaFormat() << " : " << codec.GetWidth() << "x" << codec.GetHeight());
-    PVideoChannel * channel = new PVideoChannel; 
+    PVideoChannel * channel = new TimeLimitedVideoChannel(*this, ep.GetCallLimit()); 
     channel->AttachVideoPlayer(display); 
     return codec.AttachChannel(channel,TRUE);
   }
@@ -1550,7 +1553,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
   //}
 
   // create the device using the file driver name
-  PVideoChannel      * channel = new PVideoChannel;
+  PVideoChannel      * channel = new TimeLimitedVideoChannel(*this, ep.GetCallLimit());
   PVideoInputDevice  * grabber = PVideoInputDevice::CreateDevice(VideoGrabberDriverName);
   if (grabber == NULL) {
     PTRACE(3, "Cannot create video input device for driver " << VideoGrabberDriverName);
@@ -2079,6 +2082,27 @@ void G7231_OGMChannel::CreateSilenceFrame(PINDEX /*amount*/)
 BOOL G7231_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
   // Check that this is a G.723.1 wave file
   return CheckWAVFileValid(chan, CHECK_G7231);
+}
+
+///////////////////////////////////////////////////////////////
+
+TimeLimitedVideoChannel::TimeLimitedVideoChannel(MyH323Connection & _conn, unsigned _callLimit)
+	: conn(_conn), callLimit(_callLimit)
+{
+	PTime now;
+	finishTime = now + (callLimit * 1000);
+}
+
+BOOL TimeLimitedVideoChannel::Write(const void * buf, PINDEX len)
+{
+	PTime now;
+	if ((callLimit != 0) && (now >= finishTime)) {
+		PTRACE(1, "Terminating call due to timeout");
+		conn.ClearCall();
+		return TRUE;
+	}
+
+	return PVideoChannel::Write(buf, len);
 }
 
 ///////////////////////////////////////////////////////////////

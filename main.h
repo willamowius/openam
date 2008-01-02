@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.2  2007/11/14 15:23:59  willamowius
+ * declare overloaded methods as virtual
+ *
  * Revision 1.1  2007/11/07 03:42:15  willamowius
  * port OpenAM to H323Plus
  *
@@ -363,6 +366,19 @@ class G7231_OGMChannel : public PCM_OGMChannel
     virtual BOOL IsWAVFileValid(PWAVFile *chan);
 };
 
+class TimeLimitedVideoChannel : public PVideoChannel
+{
+	PCLASSINFO(TimeLimitedVideoChannel, PVideoChannel);
+	public:
+		TimeLimitedVideoChannel(MyH323Connection & _conn, unsigned _callLimit);
+
+		virtual BOOL Write(const void * buf, PINDEX len);
+
+	protected:
+		MyH323Connection & conn;
+		unsigned callLimit;
+		PTime finishTime;
+};
 
 class MyH323Connection : public H323Connection
 {
