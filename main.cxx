@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.18  2008/01/02 19:12:30  willamowius
+ * better enforce limit on call duration for video channels
+ *
  * Revision 1.17  2008/01/02 17:12:53  willamowius
  * assign different name to each recorded video (same as with audio files)
  *
@@ -421,9 +424,9 @@
  *
  */
 
-#include <signal.h>
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
+#include <signal.h>
 
 #include "version.h"
 
