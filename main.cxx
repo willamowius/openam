@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.19  2008/02/07 08:38:04  shorne
+ * fix warning on VS 2008
+ *
  * Revision 1.18  2008/01/02 19:12:30  willamowius
  * better enforce limit on call duration for video channels
  *
@@ -430,7 +433,7 @@
 
 #include "version.h"
 
-#include "opalvxml.h"
+#include "opalvxml.h"	// for G7231_File_Codec
 #include "main.h"
 
 PCREATE_PROCESS(OpenAm);
@@ -633,6 +636,12 @@ void OpenAm::Main()
              "-videoformat:"
              "-videomode:"
 #endif
+			"-tcp-minport:"
+			"-tcp-maxport:"
+			"-udp-minport:"
+			"-udp-maxport:"
+			"-rtp-minport:"
+			"-rtp-maxport:"
           , FALSE);
 
 #if PMEMORY_CHECK
@@ -677,6 +686,12 @@ void OpenAm::Main()
             "  -p --password str   : Set the gatekeeper password to str\n"
             "  -i --interface ip   : Bind to a specific interface\n"
             "  --listenport port   : Listen on a specific port\n"
+			"  --tcp-minport port  : Set min TCP port to use for H.245\n"
+			"  --tcp-maxport port  : Set max TCP port to use for H.245\n"
+			"  --udp-minport port  : Set min UDP port to use for RAS\n"
+			"  --udp-maxport port  : Set max UDP port to use for RAS\n"
+			"  --rtp-minport port  : Set min UDP port to use for RTP\n"
+			"  --rtp-maxport port  : Set max UDP port to use for RTP\n"
             "  -g --gatekeeper host: Specify gatekeeper host.\n"
             "  -n --no-gatekeeper  : Disable gatekeeper discovery.\n"
             "  --require-gatekeeper: Exit if gatekeeper discovery fails.\n"
@@ -743,6 +758,44 @@ void OpenAm::Main()
   if (args.HasOption('p')) {
     const PString password = args.GetOptionString('p');
     endpoint->SetGatekeeperPassword(password);
+  }
+  
+  // set port ranges
+  if (args.HasOption("tcp-minport")) {
+	  unsigned tcpMinPort = args.GetOptionString("tcp-minport").AsInteger();
+	  if (tcpMinPort > 65536)
+		  tcpMinPort = 65536;
+	  unsigned tcpMaxPort = 65536;
+	  if (args.HasOption("tcp-maxport")) {
+		  tcpMaxPort = args.GetOptionString("tcp-maxport").AsInteger();
+		  if (tcpMaxPort > 65536)
+			  tcpMaxPort = 65536;
+	  }
+	  endpoint->SetTCPPorts(tcpMinPort, tcpMaxPort);
+  }
+  if (args.HasOption("udp-minport")) {
+	  unsigned udpMinPort = args.GetOptionString("udp-minport").AsInteger();
+	  if (udpMinPort > 65536)
+		  udpMinPort = 65536;
+	  unsigned udpMaxPort = 65536;
+	  if (args.HasOption("udp-maxport")) {
+		  udpMaxPort = args.GetOptionString("udp-maxport").AsInteger();
+		  if (udpMaxPort > 65536)
+			  udpMaxPort = 65536;
+	  }
+	  endpoint->SetUDPPorts(udpMinPort, udpMaxPort);
+  }
+  if (args.HasOption("rtp-minport")) {
+	  unsigned rtpMinPort = args.GetOptionString("rtp-minport").AsInteger();
+	  if (rtpMinPort > 65536)
+		  rtpMinPort = 65536;
+	  unsigned rtpMaxPort = 65536;
+	  if (args.HasOption("rtp-maxport")) {
+		  rtpMaxPort = args.GetOptionString("rtp-maxport").AsInteger();
+		  if (rtpMaxPort > 65536)
+			  rtpMaxPort = 65536;
+	  }
+	  endpoint->SetRtpIpPorts(rtpMinPort, rtpMaxPort);
   }
   
   if (!endpoint->Initialise(args))
