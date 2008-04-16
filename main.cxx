@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.20  2008/04/14 08:36:02  willamowius
+ * add switches to set port ranges for H.245, RAS and RTP
+ *
  * Revision 1.19  2008/02/07 08:38:04  shorne
  * fix warning on VS 2008
  *
@@ -438,7 +441,7 @@
 
 PCREATE_PROCESS(OpenAm);
 
-#define	DEFAULT_MSG_LIMIT	30
+#define	DEFAULT_MSG_LIMIT	0		// unlimited
 #define DEFAULT_CALL_LOG	"call_log.txt"
 
 #define	G7231_SAMPLES_PER_BLOCK	240
