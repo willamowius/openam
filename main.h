@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.3  2008/01/02 19:12:30  willamowius
+ * better enforce limit on call duration for video channels
+ *
  * Revision 1.2  2007/11/14 15:23:59  willamowius
  * declare overloaded methods as virtual
  *
@@ -224,6 +227,9 @@ class MyH323EndPoint : public H323EndPoint
 
     // new functions
     virtual BOOL Initialise(PConfigArgs & args);
+    
+    PString    GetDisplayName() const            { return displayName; }
+    void       SetDisplayName(const PString & n) { displayName = n; }
 
     PString    GetGSMOGM() const            { return gsmOgm; }
     void       SetGSMOGM(const PString & s) { gsmOgm = s; }
@@ -272,6 +278,7 @@ class MyH323EndPoint : public H323EndPoint
     BOOL GetHangupAfterPlay() const     { return flags & HangupAfterPlay; }
 
   protected:
+	PString displayName;
     unsigned callLimit;
     PString pcmOgm, g711Ogm, gsmOgm, lpc10Ogm, g7231Ogm, runCmd;
     PString speexOgm, ilbcOgm;

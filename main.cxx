@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.21  2008/04/16 07:55:18  willamowius
+ * set default message limit to 0 (unlimited)
+ *
  * Revision 1.20  2008/04/14 08:36:02  willamowius
  * add switches to set port ranges for H.245, RAS and RTP
  *
@@ -630,8 +633,9 @@ void OpenAm::Main()
 #if PTRACING
              "t-trace."
 #endif
-	           "u-username:"           "-no-username."
+			 "u-username:"           "-no-username."
              "p-password:"
+             "-displayname:"
 #if OPENAM_VIDEO
              "-videomessage:"
              "-videorate:"
@@ -687,6 +691,7 @@ void OpenAm::Main()
             "  -H --hangup         : hangup after playing message\n"
             "  -u --username str   : Set the local endpoint name to str\n"
             "  -p --password str   : Set the gatekeeper password to str\n"
+            "  --displayname str   : Set the display name to str\n"
             "  -i --interface ip   : Bind to a specific interface\n"
             "  --listenport port   : Listen on a specific port\n"
 			"  --tcp-minport port  : Set min TCP port to use for H.245\n"
@@ -757,6 +762,8 @@ void OpenAm::Main()
   if (args.HasOption('u'))
     userName = args.GetOptionString('u');
   endpoint->SetLocalUserName(userName);
+  if (args.HasOption("displayname"))
+	  endpoint->SetDisplayName(args.GetOptionString("displayname"));
 
   if (args.HasOption('p')) {
     const PString password = args.GetOptionString('p');
@@ -1368,6 +1375,8 @@ MyH323Connection::MyH323Connection(MyH323EndPoint & _ep, unsigned callReference,
       menuNames.AppendString(sections[i]);
   }
 
+  if (!_ep.GetDisplayName().IsEmpty())
+	SetDisplayName(_ep.GetDisplayName());
 }
 
 BOOL MyH323Connection::OnReceivedSignalSetup(const H323SignalPDU & setupPDU)
