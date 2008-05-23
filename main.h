@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.4  2008/05/05 15:08:16  willamowius
+ * add option --displayname <name>
+ *
  * Revision 1.3  2008/01/02 19:12:30  willamowius
  * better enforce limit on call duration for video channels
  *
@@ -223,10 +226,10 @@ class MyH323EndPoint : public H323EndPoint
 
     // overrides from H323EndPoint
     virtual H323Connection * CreateConnection(unsigned callReference);
-    virtual BOOL OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
+    virtual PBoolean OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
 
     // new functions
-    virtual BOOL Initialise(PConfigArgs & args);
+    virtual PBoolean Initialise(PConfigArgs & args);
     
     PString    GetDisplayName() const            { return displayName; }
     void       SetDisplayName(const PString & n) { displayName = n; }
@@ -253,16 +256,16 @@ class MyH323EndPoint : public H323EndPoint
     PString    GetRunCmd() const    { return runCmd; }
     PDirectory GetDirectory() const { return dir; }
 
-    void       SetRecordWav(const BOOL rec){ recordWav = rec; }
-    BOOL       GetRecordWav() const        { return recordWav; }
+    void       SetRecordWav(const PBoolean rec){ recordWav = rec; }
+    PBoolean       GetRecordWav() const        { return recordWav; }
 
-    void       SetLoopMessage(BOOL flag) { loopMessage = flag; }
-    BOOL       GetLoopMessage() const    { return loopMessage; }
+    void       SetLoopMessage(PBoolean flag) { loopMessage = flag; }
+    PBoolean       GetLoopMessage() const    { return loopMessage; }
 
 #if OPENAM_VIDEO
     PString GetVideoOGM() const       { return videoOgm; }
     int     GetVideoSize() const      { return videoSize; }
-    BOOL    GetVideoIsPal() const     { return videoIsPal; }
+    PBoolean    GetVideoIsPal() const     { return videoIsPal; }
     int     GetVideoFrameRate() const { return frameRate; }
     int     GetVideoPlayMode() const  { return videoChannel; }
 #endif
@@ -273,9 +276,9 @@ class MyH323EndPoint : public H323EndPoint
       HangupAfterPlay   = 0x04
     };
 
-    BOOL GetDeleteAfterRecord() const   { return flags & DeleteAfterRecord; }
-    BOOL GetNoRecordG7231() const       { return flags & NoRecordG7231; }
-    BOOL GetHangupAfterPlay() const     { return flags & HangupAfterPlay; }
+    PBoolean GetDeleteAfterRecord() const   { return flags & DeleteAfterRecord; }
+    PBoolean GetNoRecordG7231() const       { return flags & NoRecordG7231; }
+    PBoolean GetHangupAfterPlay() const     { return flags & HangupAfterPlay; }
 
   protected:
 	PString displayName;
@@ -284,14 +287,14 @@ class MyH323EndPoint : public H323EndPoint
     PString speexOgm, ilbcOgm;
     PDirectory dir;
     int flags;
-    BOOL recordWav;
-    BOOL loopMessage;
+    PBoolean recordWav;
+    PBoolean loopMessage;
 #if OPENAM_VIDEO
     PString videoOgm;
     int videoSize;
     int frameRate;
     int videoChannel;
-    BOOL videoIsPal;
+    PBoolean videoIsPal;
 #endif
 };
 
@@ -321,10 +324,10 @@ class PCM_OGMChannel : public PIndirectChannel
   public:
     PCM_OGMChannel(MyH323Connection & conn);
 
-    virtual BOOL Read(void * buffer, PINDEX amount);
+    virtual PBoolean Read(void * buffer, PINDEX amount);
     virtual void PlayFile(PFile * chan);
 
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     void QueueFile(const PString & cmd);
     void FlushQueue();
@@ -336,12 +339,12 @@ class PCM_OGMChannel : public PIndirectChannel
     void SetLoopMessage() { loopMessage = TRUE; }
 
   protected:
-    virtual BOOL ReadFrame(PINDEX amount);
+    virtual PBoolean ReadFrame(PINDEX amount);
     virtual void CreateSilenceFrame(PINDEX amount);
     virtual void Synchronise(PINDEX amount);
-    virtual BOOL IsWAVFileValid(PWAVFile *chan);
+    virtual PBoolean IsWAVFileValid(PWAVFile *chan);
 
-    BOOL AdjustFrame(void * buffer, PINDEX amount);
+    PBoolean AdjustFrame(void * buffer, PINDEX amount);
 
     PStringQueue playQueue;
 
@@ -349,10 +352,10 @@ class PCM_OGMChannel : public PIndirectChannel
     PMutex chanMutex;
     int silentCount;
     int totalData;
-    BOOL recordTrigger, hangupTrigger;
-    BOOL closed;
-    BOOL playOnce;
-	  BOOL loopMessage;
+    PBoolean recordTrigger, hangupTrigger;
+    PBoolean closed;
+    PBoolean playOnce;
+	  PBoolean loopMessage;
 
     PAdaptiveDelay ogm_delay;
 
@@ -367,10 +370,10 @@ class G7231_OGMChannel : public PCM_OGMChannel
     G7231_OGMChannel(MyH323Connection & conn);
 
   protected:
-    virtual BOOL ReadFrame(PINDEX amount);
+    virtual PBoolean ReadFrame(PINDEX amount);
     virtual void CreateSilenceFrame(PINDEX amount);
     virtual void Synchronise(PINDEX amount);
-    virtual BOOL IsWAVFileValid(PWAVFile *chan);
+    virtual PBoolean IsWAVFileValid(PWAVFile *chan);
 };
 
 class TimeLimitedVideoChannel : public PVideoChannel
@@ -379,7 +382,7 @@ class TimeLimitedVideoChannel : public PVideoChannel
 	public:
 		TimeLimitedVideoChannel(MyH323Connection & _conn, unsigned _callLimit);
 
-		virtual BOOL Write(const void * buf, PINDEX len);
+		virtual PBoolean Write(const void * buf, PINDEX len);
 
 	protected:
 		MyH323Connection & conn;
@@ -396,14 +399,14 @@ class MyH323Connection : public H323Connection
     virtual ~MyH323Connection();
 
     // overrides from H323Connection
-    virtual BOOL OpenAudioChannel(BOOL, unsigned, H323AudioCodec & codec);
+    virtual PBoolean OpenAudioChannel(PBoolean, unsigned, H323AudioCodec & codec);
 #if OPENAM_VIDEO
-    virtual BOOL OpenVideoChannel(BOOL, H323VideoCodec & codec);
+    virtual PBoolean OpenVideoChannel(PBoolean, H323VideoCodec & codec);
 #endif
     virtual AnswerCallResponse OnAnswerCall(const PString &, const H323SignalPDU &, H323SignalPDU &);
-    virtual BOOL OnStartLogicalChannel(H323Channel & channel);
+    virtual PBoolean OnStartLogicalChannel(H323Channel & channel);
     virtual void OnUserInputString(const PString & value);
-    virtual BOOL OnReceivedSignalSetup(const H323SignalPDU & setupPDU);
+    virtual PBoolean OnReceivedSignalSetup(const H323SignalPDU & setupPDU);
 
     // new functions
     void StartRecording();
@@ -417,12 +420,12 @@ class MyH323Connection : public H323Connection
 
   protected:
 #if OPENAM_VIDEO
-    BOOL InitGrabber(PVideoInputDevice  * grabber, unsigned newWidth, unsigned newHeight);
+    PBoolean InitGrabber(PVideoInputDevice  * grabber, unsigned newWidth, unsigned newHeight);
 #endif
 
     void OnUserInputChar(char ch);
-    BOOL StartMenu(int menuNumber);
-    BOOL ProcessMenuCmd(const PString & cmdStr);
+    PBoolean StartMenu(int menuNumber);
+    PBoolean ProcessMenuCmd(const PString & cmdStr);
 
     const MyH323EndPoint & ep;
     PString product;
@@ -434,7 +437,7 @@ class MyH323Connection : public H323Connection
 #if OPENAM_VIDEO
     PString transmitVideoCodecName, receiveVideoCodecName;
 #endif
-    BOOL    recordTrigger;
+    PBoolean    recordTrigger;
     PString calledParty;
     PMutex  connMutex;
 
@@ -457,25 +460,25 @@ class PCM_RecordFile : public PIndirectChannel
     PCM_RecordFile(MyH323Connection & conn, const PFilePath & fn, unsigned callLimit);
     virtual ~PCM_RecordFile();
 
-    virtual BOOL Write(const void * buf, PINDEX len);
-    virtual BOOL Close();
+    virtual PBoolean Write(const void * buf, PINDEX len);
+    virtual PBoolean Close();
     virtual void StartRecording();
 
     virtual void DelayFrame(PINDEX len);
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual PBoolean WriteFrame(const void * buf, PINDEX len);
 
-    virtual BOOL WasRecordStarted() const { return recordStarted; }
+    virtual PBoolean WasRecordStarted() const { return recordStarted; }
 
   protected:
     MyH323Connection & conn;
     PTime finishTime;
     PFilePath fn;
     unsigned callLimit;
-    BOOL recordStarted;
-    BOOL timeLimitExceeded;
-    BOOL closed;
-    BOOL isPCM;
-    BOOL dataWritten;
+    PBoolean recordStarted;
+    PBoolean timeLimitExceeded;
+    PBoolean closed;
+    PBoolean isPCM;
+    PBoolean dataWritten;
     PAdaptiveDelay delay;
     PMutex pcmrecordMutex;
     PFile *fileclass; // will point to a PWAVFile or PFile class
@@ -488,7 +491,7 @@ class G7231_RecordFile : public PCM_RecordFile
   public:
     G7231_RecordFile(MyH323Connection & conn, const PFilePath & fn, unsigned callLimit);
     virtual void DelayFrame(PINDEX len);
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual PBoolean WriteFrame(const void * buf, PINDEX len);
 };
 
 

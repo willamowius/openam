@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.22  2008/05/05 15:08:16  willamowius
+ * add option --displayname <name>
+ *
  * Revision 1.21  2008/04/16 07:55:18  willamowius
  * set default message limit to 0 (unlimited)
  *
@@ -521,7 +524,7 @@ static void LogCall(const PFilePath & fn,
 
 #ifdef _WIN32
 
-BOOL WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
+PBoolean WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
 {
 	PString eventName = "CTRL_UNKNOWN_EVENT";
 	
@@ -884,7 +887,7 @@ MyH323EndPoint::MyH323EndPoint(unsigned _callLimit,
 #endif
 }
 
-BOOL MyH323EndPoint::OnIncomingCall(H323Connection & _conn,
+PBoolean MyH323EndPoint::OnIncomingCall(H323Connection & _conn,
                                     const H323SignalPDU & setupPDU,
                                     H323SignalPDU &)
 {
@@ -907,7 +910,7 @@ H323Connection * MyH323EndPoint::CreateConnection(unsigned callReference)
   return new MyH323Connection(*this, callReference, options);
 }
 
-BOOL MyH323EndPoint::Initialise(PConfigArgs & args)
+PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
 {
   // format for record files, raw or wav
   if (args.HasOption("recordraw")) 
@@ -1187,7 +1190,7 @@ void PCM_RecordFile::StartRecording()
   finishTime = now + (callLimit * 1000);
 }
 
-BOOL PCM_RecordFile::Close()
+PBoolean PCM_RecordFile::Close()
 {
   PWaitAndSignal mutex(pcmrecordMutex);
 
@@ -1195,7 +1198,7 @@ BOOL PCM_RecordFile::Close()
   return fileclass->Close();
 }
 
-BOOL PCM_RecordFile::Write(const void * buf, PINDEX len)
+PBoolean PCM_RecordFile::Write(const void * buf, PINDEX len)
 {
   // Wait for the mutex, and Signal it at the end of this function
   PWaitAndSignal mutex(pcmrecordMutex);
@@ -1225,7 +1228,7 @@ BOOL PCM_RecordFile::Write(const void * buf, PINDEX len)
   return WriteFrame(buf, len);
 }
 
-BOOL PCM_RecordFile::WriteFrame(const void * buf, PINDEX len)
+PBoolean PCM_RecordFile::WriteFrame(const void * buf, PINDEX len)
 {
   //cerr << "Writing PCM " << len << endl;
   return  fileclass->Write(buf, len);
@@ -1265,7 +1268,7 @@ G7231_RecordFile::G7231_RecordFile(MyH323Connection & _conn, const PFilePath & _
   }
 }
 
-BOOL G7231_RecordFile::WriteFrame(const void * buf, PINDEX /*len*/)
+PBoolean G7231_RecordFile::WriteFrame(const void * buf, PINDEX /*len*/)
 {
   int frameLen = G7231_File_Codec::GetFrameLen(*(BYTE *)buf);
 //  cerr << "Writing G7231 " << frameLen << endl;
@@ -1281,7 +1284,7 @@ void G7231_RecordFile::DelayFrame(PINDEX /*len*/)
 
 ///////////////////////////////////////////////////////////////
 
-static BOOL MatchString(const PString & str1, const PString str2)
+static PBoolean MatchString(const PString & str1, const PString str2)
 {
   if (str1.GetLength() != str2.GetLength())
     return FALSE;
@@ -1379,7 +1382,7 @@ MyH323Connection::MyH323Connection(MyH323EndPoint & _ep, unsigned callReference,
 	SetDisplayName(_ep.GetDisplayName());
 }
 
-BOOL MyH323Connection::OnReceivedSignalSetup(const H323SignalPDU & setupPDU)
+PBoolean MyH323Connection::OnReceivedSignalSetup(const H323SignalPDU & setupPDU)
 {
   if (!H323Connection::OnReceivedSignalSetup(setupPDU))
     return FALSE;
@@ -1463,7 +1466,7 @@ H323Connection::AnswerCallResponse
   return AnswerCallNow;
 }
 
-BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding, 
+PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding, 
                                         unsigned /* bufferSize */, 
                                         H323AudioCodec & codec)
 {
@@ -1471,7 +1474,7 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
   PString codecName = codec.GetMediaFormat();
 
   PString ogm;
-  BOOL isPCM = FALSE;
+  PBoolean isPCM = FALSE;
 
   if (codecName == OPAL_G7231_6k3) {
     ogm   = ep.GetG7231OGM();
@@ -1553,7 +1556,7 @@ BOOL MyH323Connection::OpenAudioChannel(BOOL isEncoding,
 
 #if OPENAM_VIDEO
 
-BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
+PBoolean MyH323Connection::OpenVideoChannel(PBoolean isEncoding, H323VideoCodec & codec)
 {
   PString capture_filename(ep.GetDirectory() + (basename + ".yuv"));
   if (!isEncoding) {
@@ -1640,7 +1643,7 @@ BOOL MyH323Connection::OpenVideoChannel(BOOL isEncoding, H323VideoCodec & codec)
   return codec.AttachChannel(channel,TRUE);
 }
 
-BOOL MyH323Connection::InitGrabber(PVideoInputDevice * grabber, unsigned codecFrameWidth, unsigned codecFrameHeight)
+PBoolean MyH323Connection::InitGrabber(PVideoInputDevice * grabber, unsigned codecFrameWidth, unsigned codecFrameHeight)
 {
   unsigned int grabberFrameWidth  =  352 >> (1 - ep.GetVideoSize());                
   unsigned int grabberFrameHeight = (ep.GetVideoIsPal() ? 288 : 240) >> (1 - ep.GetVideoSize());                
@@ -1694,7 +1697,7 @@ BOOL MyH323Connection::InitGrabber(PVideoInputDevice * grabber, unsigned codecFr
 #endif // OPENAM_VIDEO
 
 
-BOOL MyH323Connection::OnStartLogicalChannel(H323Channel & channel)
+PBoolean MyH323Connection::OnStartLogicalChannel(H323Channel & channel)
 {
   if (!H323Connection::OnStartLogicalChannel(channel))
     return FALSE;
@@ -1734,7 +1737,7 @@ void MyH323Connection::OnUserInputString(const PString & value)
   }
 }
 
-BOOL MyH323Connection::StartMenu(int menuNumber)
+PBoolean MyH323Connection::StartMenu(int menuNumber)
 {
   digits = "";
   currentMenu = menuNumber;
@@ -1753,7 +1756,7 @@ BOOL MyH323Connection::StartMenu(int menuNumber)
   return TRUE;
 }
 
-BOOL MyH323Connection::ProcessMenuCmd(const PString & cmdStr)
+PBoolean MyH323Connection::ProcessMenuCmd(const PString & cmdStr)
 {
   PTRACE(1, "Processing menu cmd " << cmdStr);
   PStringArray tokens = cmdStr.Tokenise(" ", FALSE);
@@ -1830,7 +1833,7 @@ void MyH323Connection::OnUserInputChar(char ch)
 
 ///////////////////////////////////////////////////////////////
 
-BOOL CheckWAVFileValid(PWAVFile *chan, int type) {
+PBoolean CheckWAVFileValid(PWAVFile *chan, int type) {
   // Check the wave file header
   if (!chan->IsValid()) {
     PTRACE(1, chan->GetName() << " wav file header invalid");
@@ -1898,13 +1901,13 @@ void PCM_OGMChannel::PlayFile(PFile * chan)
 }
 
 
-BOOL PCM_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
+PBoolean PCM_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
   // Check that this is a PCM wave file
   return CheckWAVFileValid(chan, CHECK_PCM);
 }
 
 
-BOOL PCM_OGMChannel::Read(void * buffer, PINDEX amount)
+PBoolean PCM_OGMChannel::Read(void * buffer, PINDEX amount)
 {
 	PWaitAndSignal mutex(chanMutex);
 
@@ -1917,8 +1920,8 @@ BOOL PCM_OGMChannel::Read(void * buffer, PINDEX amount)
 	frameBuffer.SetMinSize(1024);//amount);
 
 	// assume we are returning silence
-	BOOL doSilence = TRUE;
-	BOOL frameBoundary = FALSE;
+	PBoolean doSilence = TRUE;
+	PBoolean frameBoundary = FALSE;
 
 	// if still outputting a frame from last time, then keep doing it
 	if (frameOffs < frameLen) {
@@ -2019,7 +2022,7 @@ BOOL PCM_OGMChannel::Read(void * buffer, PINDEX amount)
   return TRUE;
 }
 
-BOOL PCM_OGMChannel::Close()
+PBoolean PCM_OGMChannel::Close()
 {
   PWaitAndSignal mutex(chanMutex);
   closed = TRUE;
@@ -2067,7 +2070,7 @@ void PCM_OGMChannel::FlushQueue()
     delete str;
 }
 
-BOOL PCM_OGMChannel::AdjustFrame(void * buffer, PINDEX amount)
+PBoolean PCM_OGMChannel::AdjustFrame(void * buffer, PINDEX amount)
 {
   // reduce read size for very short frame
   if ((amount > frameLen) && (frameOffs == 0))
@@ -2092,12 +2095,12 @@ void PCM_OGMChannel::Synchronise(PINDEX amount)
   ogm_delay.Delay(amount / 16);
 }
 
-BOOL PCM_OGMChannel::ReadFrame(PINDEX amount)
+PBoolean PCM_OGMChannel::ReadFrame(PINDEX amount)
 {
   frameOffs = 0;
   frameLen  = amount;
 
-  BOOL result = PIndirectChannel::Read(frameBuffer.GetPointer(), frameLen);
+  PBoolean result = PIndirectChannel::Read(frameBuffer.GetPointer(), frameLen);
 
   // if we did not read a full frame of audio, fill the end of the
   // frame with zeros.
@@ -2127,7 +2130,7 @@ void G7231_OGMChannel::Synchronise(PINDEX /*amount*/)
   ogm_delay.Delay(30);
 }
 
-BOOL G7231_OGMChannel::ReadFrame(PINDEX /*amount*/)
+PBoolean G7231_OGMChannel::ReadFrame(PINDEX /*amount*/)
 {
   if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
     return FALSE;
@@ -2147,7 +2150,7 @@ void G7231_OGMChannel::CreateSilenceFrame(PINDEX /*amount*/)
   memset(frameBuffer.GetPointer()+1, 0, 3);
 }
 
-BOOL G7231_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
+PBoolean G7231_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
   // Check that this is a G.723.1 wave file
   return CheckWAVFileValid(chan, CHECK_G7231);
 }
@@ -2161,7 +2164,7 @@ TimeLimitedVideoChannel::TimeLimitedVideoChannel(MyH323Connection & _conn, unsig
 	finishTime = now + (callLimit * 1000);
 }
 
-BOOL TimeLimitedVideoChannel::Write(const void * buf, PINDEX len)
+PBoolean TimeLimitedVideoChannel::Write(const void * buf, PINDEX len)
 {
 	PTime now;
 	if ((callLimit != 0) && (now >= finishTime)) {
