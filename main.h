@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.5  2008/05/23 11:18:11  willamowius
+ * switch BOOL to PBoolean to be able to compile with Ptlib 2.2.x
+ *
  * Revision 1.4  2008/05/05 15:08:16  willamowius
  * add option --displayname <name>
  *
@@ -211,6 +214,10 @@
 
 #if OPENAM_VIDEO
 #include <ptlib/video.h>
+#endif
+
+#if !defined(P_USE_STANDARD_CXX_BOOL) && !defined(P_USE_INTEGER_BOOL)
+	typedef int PBoolean;
 #endif
 
 class MyH323EndPoint : public H323EndPoint
