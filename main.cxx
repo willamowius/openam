@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.23  2008/05/23 11:18:10  willamowius
+ * switch BOOL to PBoolean to be able to compile with Ptlib 2.2.x
+ *
  * Revision 1.22  2008/05/05 15:08:16  willamowius
  * add option --displayname <name>
  *
@@ -518,7 +521,7 @@ static void LogCall(const PFilePath & fn,
                     const PString & to)
 {
   PString addr = from;
-  LogMessage(addr & "\"" + user + "\"" & PString(PString::Unsigned, len) & codec & "\"" + product + "\"" & "\"" + fn + "\"" & "\"" + to + "\"");
+  LogMessage(addr + " \"" + user + "\" " + PString(PString::Unsigned, len) + " " + codec + " \"" + product + "\" \"" + fn + "\" \"" + to + "\"");
 }
 
 
@@ -887,13 +890,17 @@ MyH323EndPoint::MyH323EndPoint(unsigned _callLimit,
 #endif
 }
 
+MyH323EndPoint::~MyH323EndPoint()
+{
+}
+
 PBoolean MyH323EndPoint::OnIncomingCall(H323Connection & _conn,
                                     const H323SignalPDU & setupPDU,
                                     H323SignalPDU &)
 {
   MyH323Connection & conn = (MyH323Connection &)_conn;
 
-  // see if incoming call is to a getway address
+  // see if incoming call is to an E.164 number
   PString number;
   if (setupPDU.GetDestinationE164(number)) 
     conn.SetE164Number(number);
@@ -918,7 +925,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   else
     SetRecordWav(TRUE);
 
-  // get G723.1 OGM
+  // get G.723.1 OGM
   if (args.HasOption("g7231message"))
     g7231Ogm = args.GetOptionString("g7231message");
   else if (args.HasOption('m'))  {
@@ -1076,7 +1083,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
     return FALSE;
   }
 
-  AddAllCapabilities(0, 0, "*");
+  AddAllCapabilities(0, P_MAX_INDEX, "*");
 
 #if OPENAM_VIDEO
   if (!videoOgm.IsEmpty()) {
@@ -1136,13 +1143,16 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
     removeString = removeString & "Speex";
  
   if (g711Ogm.IsEmpty())
-    removeString = removeString & "711";
+    removeString = removeString & "G.711";
 
   if (lpc10Ogm.IsEmpty())
     removeString = removeString & "LPC-10";
 
   if (ilbcOgm.IsEmpty())
     removeString = removeString & "iLBC";
+
+  // also remove other codecs we do don't have an OGM for
+  removeString = removeString & "G.726";
 
   if (!g7231Ogm.IsEmpty())
     SetCapability(0, 0, new G7231_File_Capability);
@@ -1414,13 +1424,13 @@ MyH323Connection::~MyH323Connection()
   LogCall(recordFn, addr, GetRemotePartyName(), duration, codecStr, product, calledParty);
 
   if ((recordFile!= NULL) && (recordFile->WasRecordStarted()) && !ep.GetRunCmd().IsEmpty()) {
-    PString cmdStr = ep.GetRunCmd() &
-                     recordFn &
-                     "'" + addr + "'" &
-                     "\"" + GetRemotePartyName() + "\"" &
-                     PString(PString::Unsigned, duration) &
-                     "\"" + codecStr + "\"" &
-                     "\"" + product + "\"" &
+    PString cmdStr = ep.GetRunCmd() +
+                     recordFn +
+                     "'" + addr + "' " +
+                     "\"" + GetRemotePartyName() + "\" " +
+                     PString(PString::Unsigned, duration) +
+                     "\"" + codecStr + "\" " +
+                     "\"" + product + "\" " +
                      "\"" + calledParty + "\"";
     PTRACE(1, "Executing : " << cmdStr);
     system((const char *)cmdStr);

@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.6  2009/02/24 10:58:16  willamowius
+ * add backwards compatibility to H323Plus versions before the PBoolean change
+ *
  * Revision 1.5  2008/05/23 11:18:11  willamowius
  * switch BOOL to PBoolean to be able to compile with Ptlib 2.2.x
  *
@@ -195,8 +198,8 @@
  *
  */
 
-#ifndef _Voxilla_MAIN_H
-#define _Voxilla_MAIN_H
+#ifndef _OPENAM_MAIN_H
+#define _OPENAM_MAIN_H
 
 #include <h323.h>
 #include <h323pdu.h>
@@ -229,7 +232,7 @@ class MyH323EndPoint : public H323EndPoint
                    const PString & runCmd,
                    const PDirectory & dir,
                    int flags);
-	virtual ~MyH323EndPoint() { };
+	virtual ~MyH323EndPoint();
 
     // overrides from H323EndPoint
     virtual H323Connection * CreateConnection(unsigned callReference);
@@ -419,11 +422,7 @@ class MyH323Connection : public H323Connection
     void StartRecording();
     void Hangup();
 
-    void SetE164Number(const PString & _num)
-      { e164Number = _num; }
-
-    PString GetE164Number() const
-      { return e164Number; }
+	void SetE164Number(const PString & _num) { e164Number = _num; }
 
   protected:
 #if OPENAM_VIDEO
@@ -502,7 +501,7 @@ class G7231_RecordFile : public PCM_RecordFile
 };
 
 
-#endif  // _Voxilla_MAIN_H
+#endif  // _OPENAM_MAIN_H
 
 
 // End of File ///////////////////////////////////////////////////////////////
