@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.7  2009/05/06 13:13:50  willamowius
+ * fix warnings + cleanup
+ *
  * Revision 1.6  2009/02/24 10:58:16  willamowius
  * add backwards compatibility to H323Plus versions before the PBoolean change
  *
@@ -237,6 +240,7 @@ class MyH323EndPoint : public H323EndPoint
     // overrides from H323EndPoint
     virtual H323Connection * CreateConnection(unsigned callReference);
     virtual PBoolean OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
+    virtual void OnSetInitialBandwidth(H323VideoCodec * codec);
 
     // new functions
     virtual PBoolean Initialise(PConfigArgs & args);

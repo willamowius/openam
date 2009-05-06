@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.24  2009/05/06 13:13:49  willamowius
+ * fix warnings + cleanup
+ *
  * Revision 1.23  2008/05/23 11:18:10  willamowius
  * switch BOOL to PBoolean to be able to compile with Ptlib 2.2.x
  *
@@ -908,6 +911,11 @@ PBoolean MyH323EndPoint::OnIncomingCall(H323Connection & _conn,
   return TRUE;
 }
 
+void MyH323EndPoint::OnSetInitialBandwidth(H323VideoCodec * codec)
+{
+	// TODO: set MaxBitRate and bandwidth here
+}
+
 H323Connection * MyH323EndPoint::CreateConnection(unsigned callReference)
 {
   unsigned options = 0;
@@ -1490,11 +1498,6 @@ PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding,
     ogm   = ep.GetG7231OGM();
     isPCM = FALSE;
   } else {
-    static OpalMediaFormat::List list = H323PluginCodecManager::GetMediaFormats();
-    if (list.GetValuesIndex(codecName) == P_MAX_INDEX) {
-      cerr << "Unknown codec \"" << codecName << endl;
-      return FALSE;
-    }
     isPCM = TRUE;
     if (codecName == OPAL_G711_ULAW_64K || codecName == OPAL_G711_ALAW_64K)
       ogm = ep.GetG711OGM();
@@ -1504,8 +1507,10 @@ PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding,
       ogm = ep.GetiLBCOGM();
     else if (codecName.Find("Speex") != P_MAX_INDEX)
       ogm = ep.GetSPEEXOGM();
-    else
-      ogm = ep.GetG711OGM();
+    else {
+      cerr << "Unsupported codec \"" << codecName << endl;
+      return FALSE;
+    }
   }
 
   PWaitAndSignal mutex(connMutex);
@@ -1569,7 +1574,7 @@ PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding,
 PBoolean MyH323Connection::OpenVideoChannel(PBoolean isEncoding, H323VideoCodec & codec)
 {
   PString capture_filename(ep.GetDirectory() + (basename + ".yuv"));
-  if (!isEncoding) {
+  if (!isEncoding) {	// incoming connection
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
 	if (ep.GetLoopMessage()) {	// just loop message, no recording
@@ -1588,11 +1593,12 @@ PBoolean MyH323Connection::OpenVideoChannel(PBoolean isEncoding, H323VideoCodec 
 		display = new PVideoOutputDevice_YUVFile();
 	}   
     if (display == NULL) {
-      PTRACE(3, "Cannot create video output device");
+      PTRACE(1, "Cannot create video output device");
       return FALSE;
     }
 
     if (!display->Open(capture_filename)) {
+      PTRACE(1, "Cannot open capture file " << capture_filename);
       delete display;
       return FALSE;
     }
@@ -1642,6 +1648,7 @@ PBoolean MyH323Connection::OpenVideoChannel(PBoolean isEncoding, H323VideoCodec 
   }
 
   if (!InitGrabber(grabber, codec.GetWidth(), codec.GetHeight())) {
+	PTRACE(1, "Cannot initialize grabber " << VideoGrabberDriverName);
     delete grabber;
     return FALSE;
   }
@@ -1663,31 +1670,28 @@ PBoolean MyH323Connection::InitGrabber(PVideoInputDevice * grabber, unsigned cod
 
   PTRACE(3, "Attempt to open file " << ep.GetVideoOGM() << " for reading."); 
   if (!grabber->Open(ep.GetVideoOGM(), FALSE)) {
-    PTRACE(3, "Failed to open the video input device");
+    PTRACE(1, "Failed to open the video input device " << ep.GetVideoOGM());
     return FALSE;
   }
 
   if (!grabber->SetChannel(ep.GetVideoPlayMode())) {
-    PTRACE(3, "Failed to set channel to " << ep.GetVideoPlayMode());
+    PTRACE(1, "Failed to set channel to " << ep.GetVideoPlayMode());
     return FALSE;
   }
 
   if (!grabber->SetVideoFormat(
       ep.GetVideoIsPal() ? PVideoDevice::PAL : PVideoDevice::NTSC)) {
-    PTRACE(3, "Failed to set format to " << (ep.GetVideoIsPal() ? "PAL" : "NTSC"));
+    PTRACE(1, "Failed to set format to " << (ep.GetVideoIsPal() ? "PAL" : "NTSC"));
     return FALSE;
   }
 
   if (!grabber->SetColourFormatConverter("YUV420P") ) {
-    PTRACE(3,"Failed to set format to YUV420P");
+    PTRACE(1,"Failed to set format to YUV420P");
     return FALSE;
   }
 
   if (ep.GetVideoFrameRate() != 0) {
-    if (!grabber->SetFrameRate(ep.GetVideoFrameRate())) {
-      PTRACE(3, "Failed to set framerate to " << ep.GetVideoFrameRate());
-      return FALSE;
-    }
+    grabber->SetFrameRate(ep.GetVideoFrameRate());
   }
 
   // set the grabber to grab the size specified by the command line
@@ -1696,7 +1700,7 @@ PBoolean MyH323Connection::InitGrabber(PVideoInputDevice * grabber, unsigned cod
   // if the codec wants a different size, then change to that size
   if (grabberFrameWidth != codecFrameWidth || grabberFrameHeight != codecFrameHeight) {
     if (!grabber->SetFrameSizeConverter(codecFrameWidth, codecFrameHeight,FALSE)) {
-      PTRACE(3, "Failed to set frame size to " << codecFrameWidth << "x" << codecFrameHeight);
+      PTRACE(1, "Failed to set frame size to " << codecFrameWidth << "x" << codecFrameHeight);
       return FALSE;
     }
   }
