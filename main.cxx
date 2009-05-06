@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.25  2009/05/06 15:22:45  willamowius
+ * ignore errors on SetFrameRate, fix OGM selection, make error messages seen
+ *
  * Revision 1.24  2009/05/06 13:13:49  willamowius
  * fix warnings + cleanup
  *
@@ -873,7 +876,7 @@ void OpenAm::Shutdown()
 			endpoint->RemoveGatekeeper();
 		delete endpoint;
 	}
-	exit(0);
+	_exit(0);	// HACK: avoid destruction of global objects
 }
 
 
