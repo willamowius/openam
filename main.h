@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.8  2009/05/06 15:22:48  willamowius
+ * ignore errors on SetFrameRate, fix OGM selection, make error messages seen
+ *
  * Revision 1.7  2009/05/06 13:13:50  willamowius
  * fix warnings + cleanup
  *
@@ -273,6 +276,9 @@ class MyH323EndPoint : public H323EndPoint
     void       SetRecordWav(const PBoolean rec){ recordWav = rec; }
     PBoolean       GetRecordWav() const        { return recordWav; }
 
+    void       SetNoRecord(PBoolean flag) { recordMessage = flag; }
+    PBoolean       GetNoRecord() const    { return recordMessage; }
+
     void       SetLoopMessage(PBoolean flag) { loopMessage = flag; }
     PBoolean       GetLoopMessage() const    { return loopMessage; }
 
@@ -286,12 +292,10 @@ class MyH323EndPoint : public H323EndPoint
     
     enum {
       DeleteAfterRecord = 0x01,
-      NoRecordG7231     = 0x02,
       HangupAfterPlay   = 0x04
     };
 
     PBoolean GetDeleteAfterRecord() const   { return flags & DeleteAfterRecord; }
-    PBoolean GetNoRecordG7231() const       { return flags & NoRecordG7231; }
     PBoolean GetHangupAfterPlay() const     { return flags & HangupAfterPlay; }
 
   protected:
@@ -302,6 +306,7 @@ class MyH323EndPoint : public H323EndPoint
     PDirectory dir;
     int flags;
     PBoolean recordWav;
+    PBoolean recordMessage;
     PBoolean loopMessage;
 #if OPENAM_VIDEO
     PString videoOgm;

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.26  2009/05/06 17:42:07  willamowius
+ * destructing global objects on shutdown causes an infinite recursion with current PTLibs (eg. 2.4.5), so we don't do that for now
+ *
  * Revision 1.25  2009/05/06 15:22:45  willamowius
  * ignore errors on SetFrameRate, fix OGM selection, make error messages seen
  *
@@ -626,7 +629,7 @@ void OpenAm::Main()
              "-lpc10message:"        "-no-lpc10message."
              "-speexmessage:"        "-no-speexmessage."
              "m-message:"            "-no-message."
-             "-no-recordg7231."
+             "-no-record."
              "-loop."
 #if PTRACING
              "o-output:"
@@ -678,6 +681,7 @@ void OpenAm::Main()
             "Options:\n"
             "  -d --directory dir  : Put recorded mesages into dir\n"
             "  -l --limit secs     : Limit recorded messages to secs duration (default " << DEFAULT_MSG_LIMIT << ")\n"
+            "  --no-record         : Don't record a message\n"
             "  -m --pcmmessage fn  : Set outgoing message for PCM derived codecs (G.711/GSM) to fn\n"
             "  --g7231message fn   : Set outgoing message for G723.1 codec to fn\n"
             "  --g711message fn    : Set outgoing message for G711 codec to fn\n"
@@ -737,7 +741,7 @@ void OpenAm::Main()
     } else if (callLimit == 0)
       cout << "warning: recorded message call limit disabled\n";
   }
-  if (!args.HasOption("no-recordg7231") && !args.HasOption("loop"))
+  if (!args.HasOption("no-record") && !args.HasOption("loop"))
 	  cout << "Recorded messages limited to " << callLimit << " seconds\n";
   else
 	  cout << "Recording disabled\n";
@@ -754,10 +758,6 @@ void OpenAm::Main()
 
   int flags = 0;
 
-  if (args.HasOption("no-recordg7231")) {
-    cout << "Supressing recording of G723.1 messages" << endl;
-    flags |= MyH323EndPoint::NoRecordG7231;
-  }
   if (args.HasOption('k')) {
     cout << "Deleting recorded files after processing" << endl;
     if (runCmd.IsEmpty()) 
@@ -981,9 +981,15 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
       }
   }
 
-  if (args.HasOption("loop"))
-    SetLoopMessage(TRUE);
+  if (args.HasOption("no-record"))
+    SetNoRecord(TRUE);
   else
+	SetNoRecord(FALSE);
+
+  if (args.HasOption("loop")) {
+    SetLoopMessage(TRUE);
+    SetNoRecord(TRUE);
+  } else
 	SetLoopMessage(FALSE);
 
 
@@ -1560,7 +1566,7 @@ PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding,
       }
       else
         ogmChannel->QueueFile(ogm);
-      if (!(ep.GetNoRecordG7231() || ep.GetLoopMessage()))
+      if (!ep.GetNoRecord())
         ogmChannel->SetRecordTrigger();
     }
     codec.AttachChannel(ogmChannel, FALSE);
@@ -1580,7 +1586,7 @@ PBoolean MyH323Connection::OpenVideoChannel(PBoolean isEncoding, H323VideoCodec 
   if (!isEncoding) {	// incoming connection
     receiveVideoCodecName = codec.GetMediaFormat(); 
     PVideoOutputDevice * display = NULL;
-	if (ep.GetLoopMessage()) {	// just loop message, no recording
+	if (ep.GetNoRecord()) {
 		// TODO: this would be better, but fails when building with 'make optnoshared'
 		// PTRACE(3, "Try to create NULLOutput device");
 		// display = PVideoOutputDevice::CreateDevice("NULLOutput");
