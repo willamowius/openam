@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.27  2009/05/06 18:33:07  willamowius
+ * generic --no-record switch replaces --no-recordg7231
+ *
  * Revision 1.26  2009/05/06 17:42:07  willamowius
  * destructing global objects on shutdown causes an infinite recursion with current PTLibs (eg. 2.4.5), so we don't do that for now
  *
@@ -767,7 +770,7 @@ void OpenAm::Main()
 
   if (args.HasOption('H'))
     flags |= MyH323EndPoint::HangupAfterPlay;
-  
+
   endpoint = new MyH323EndPoint(callLimit, runCmd, dir, flags);
 
   PString userName = "OpenH323 Answering Machine v" + GetVersion();
@@ -1167,6 +1170,9 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
 
   if (ilbcOgm.IsEmpty())
     removeString = removeString & "iLBC";
+
+  if (videoOgm.IsEmpty())
+    removeString = removeString & "H.261 H.263 H.264";	// TODO: disable all video codec
 
   // also remove other codecs we do don't have an OGM for
   removeString = removeString & "G.726";
