@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.28  2009/05/14 10:31:56  willamowius
+ * disable video codecs when no video ogm is set
+ *
  * Revision 1.27  2009/05/06 18:33:07  willamowius
  * generic --no-record switch replaces --no-recordg7231
  *
@@ -1171,8 +1174,10 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   if (ilbcOgm.IsEmpty())
     removeString = removeString & "iLBC";
 
+#if OPENAM_VIDEO
   if (videoOgm.IsEmpty())
-    removeString = removeString & "H.261 H.263 H.264";	// TODO: disable all video codec
+    removeString = removeString & "H.261 H.263 H.264";	// TODO: disable all possible video codecs
+#endif
 
   // also remove other codecs we do don't have an OGM for
   removeString = removeString & "G.726";
