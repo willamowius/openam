@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.29  2009/05/14 11:05:09  willamowius
+ * make sure compilation without video works
+ *
  * Revision 1.28  2009/05/14 10:31:56  willamowius
  * disable video codecs when no video ogm is set
  *
@@ -542,7 +545,7 @@ static void LogCall(const PFilePath & fn,
 
 #ifdef _WIN32
 
-PBoolean WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
+BOOL WINAPI WinCtrlHandlerProc(DWORD dwCtrlType)
 {
 	PString eventName = "CTRL_UNKNOWN_EVENT";
 	
