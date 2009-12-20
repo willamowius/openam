@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.30  2009/08/29 01:53:31  shorne
+ * Fix compiling on Windows
+ *
  * Revision 1.29  2009/05/14 11:05:09  willamowius
  * make sure compilation without video works
  *
@@ -1464,7 +1467,10 @@ MyH323Connection::~MyH323Connection()
                      "\"" + product + "\" " +
                      "\"" + calledParty + "\"";
     PTRACE(1, "Executing : " << cmdStr);
-    system((const char *)cmdStr);
+    int status = system((const char *)cmdStr);
+    if (status != 0) {
+    PTRACE(1, "Execution failed with code " << status);
+    }
   } else {
     PTRACE(1, "No action to perform at end of record");
   }
