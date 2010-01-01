@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.31  2009/12/20 21:07:21  willamowius
+ * print error code of executed command
+ *
  * Revision 1.30  2009/08/29 01:53:31  shorne
  * Fix compiling on Windows
  *
@@ -667,6 +670,7 @@ void OpenAm::Main()
              "-videomessage:"
              "-videorate:"
              "-videosize:"
+             "-videobitrate:"
              "-videoformat:"
              "-videomode:"
 #endif
@@ -704,6 +708,7 @@ void OpenAm::Main()
 #if OPENAM_VIDEO
             "  --videomessage fn   : Set outgoing message for video to fn\n"
             "  --videorate num     : Set video frame rate (default is " << DEFAULT_VIDEO_FRAME_RATE << ")\n"
+            "  --videobitrate rate : Set video max bit rate for video (default is unlimited)\n"
             "  --videosize size    : Set video frame size (default is " << DEFAULT_VIDEO_SIZE << ")\n"
             "                      : Must be one of qcif or cif\n"
             "  --videoformat fmt   : Set video frame format (default is " << DEFAULT_VIDEO_FORMAT << ")\n"
@@ -926,11 +931,6 @@ PBoolean MyH323EndPoint::OnIncomingCall(H323Connection & _conn,
   return TRUE;
 }
 
-void MyH323EndPoint::OnSetInitialBandwidth(H323VideoCodec * codec)
-{
-	// TODO: set MaxBitRate and bandwidth here
-}
-
 H323Connection * MyH323EndPoint::CreateConnection(unsigned callReference)
 {
   unsigned options = 0;
@@ -1123,11 +1123,11 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
 
     OpalMediaFormat::List mediaFormats = H323PluginCodecManager::GetMediaFormats();
 
-//    int videoBitRate = 0; //disable setting videoBitRate.
-//    if (args.HasOption("videobitrate")) {
-//      videoBitRate = args.GetOptionString("videobitrate").AsInteger();
-//      videoBitRate = 1024 * PMAX(16, PMIN(2048, videoBitRate));
-//    }
+	int videoBitRate = 0; //disable setting videoBitRate.
+	if (args.HasOption("videobitrate")) {
+		videoBitRate = args.GetOptionString("videobitrate").AsInteger();
+		videoBitRate = 1024 * PMAX(16, PMIN(2048, videoBitRate));
+	}
 
     videoSize = (PString(DEFAULT_VIDEO_SIZE) *= "qcif") ? 0 : 1;
     if (args.GetOptionString("videosize") *= "cif")
@@ -1511,6 +1511,29 @@ H323Connection::AnswerCallResponse
   sourceno.Delete(0,1);
 
   return AnswerCallNow;
+}
+
+void MyH323Connection::OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu)
+{
+	H323Connection::OnSendCapabilitySet(pdu);
+
+	// reduce maxBitRate for H.261 and H.263
+	unsigned newMaxBitRate = ep.GetVideoBitRate();
+		if (newMaxBitRate > 0) {
+		for (PINDEX i=0; i < pdu.m_capabilityTable.GetSize(); i++) {
+			H245_Capability & cap = pdu.m_capabilityTable[i].m_capability;
+			if (cap.GetTag() == H245_VideoCapability::e_h261VideoCapability) {
+				H245_VideoCapability & videocap = cap;
+				H245_H261VideoCapability & h261cap = videocap;
+				h261cap.m_maxBitRate = newMaxBitRate;
+			}
+			if (cap.GetTag() == H245_VideoCapability::e_h263VideoCapability) {
+				H245_VideoCapability & videocap = cap;
+				H245_H263VideoCapability & h263cap = videocap;
+				h263cap.m_maxBitRate = newMaxBitRate;
+			}
+		}
+	}
 }
 
 PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding, 

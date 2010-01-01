@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.9  2009/05/06 18:33:09  willamowius
+ * generic --no-record switch replaces --no-recordg7231
+ *
  * Revision 1.8  2009/05/06 15:22:48  willamowius
  * ignore errors on SetFrameRate, fix OGM selection, make error messages seen
  *
@@ -243,7 +246,6 @@ class MyH323EndPoint : public H323EndPoint
     // overrides from H323EndPoint
     virtual H323Connection * CreateConnection(unsigned callReference);
     virtual PBoolean OnIncomingCall(H323Connection &, const H323SignalPDU &, H323SignalPDU &);
-    virtual void OnSetInitialBandwidth(H323VideoCodec * codec);
 
     // new functions
     virtual PBoolean Initialise(PConfigArgs & args);
@@ -285,6 +287,7 @@ class MyH323EndPoint : public H323EndPoint
 #if OPENAM_VIDEO
     PString GetVideoOGM() const       { return videoOgm; }
     int     GetVideoSize() const      { return videoSize; }
+    int     GetVideoBitRate() const      { return videoBitRate; }
     PBoolean    GetVideoIsPal() const     { return videoIsPal; }
     int     GetVideoFrameRate() const { return frameRate; }
     int     GetVideoPlayMode() const  { return videoChannel; }
@@ -311,6 +314,7 @@ class MyH323EndPoint : public H323EndPoint
 #if OPENAM_VIDEO
     PString videoOgm;
     int videoSize;
+    int videoBitRate;
     int frameRate;
     int videoChannel;
     PBoolean videoIsPal;
@@ -423,6 +427,7 @@ class MyH323Connection : public H323Connection
     virtual PBoolean OpenVideoChannel(PBoolean, H323VideoCodec & codec);
 #endif
     virtual AnswerCallResponse OnAnswerCall(const PString &, const H323SignalPDU &, H323SignalPDU &);
+    virtual void OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu);
     virtual PBoolean OnStartLogicalChannel(H323Channel & channel);
     virtual void OnUserInputString(const PString & value);
     virtual PBoolean OnReceivedSignalSetup(const H323SignalPDU & setupPDU);
