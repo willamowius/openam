@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.10  2010/01/01 00:58:37  willamowius
+ * allow setting of video maxBitRate with --videobitrate <rate>
+ *
  * Revision 1.9  2009/05/06 18:33:09  willamowius
  * generic --no-record switch replaces --no-recordg7231
  *
@@ -469,7 +472,6 @@ class MyH323Connection : public H323Connection
     PStringList menuNames;
 
     PString securityToken, e164Number;
-    PString sourceno;
 };
 
 class PCM_RecordFile : public PIndirectChannel

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.32  2010/01/01 00:58:36  willamowius
+ * allow setting of video maxBitRate with --videobitrate <rate>
+ *
  * Revision 1.31  2009/12/20 21:07:21  willamowius
  * print error code of executed command
  *
@@ -1506,9 +1509,6 @@ H323Connection::AnswerCallResponse
   }
   
   cout << "Accepting call from " << caller << " using " << product << endl;
-
-  setupPDU.GetSourceE164(sourceno);
-  sourceno.Delete(0,1);
 
   return AnswerCallNow;
 }
