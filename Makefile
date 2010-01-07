@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log$
+# Revision 1.2  2007/11/13 13:18:24  willamowius
+# cleanup
+#
 # Revision 1.1  2007/11/07 03:42:12  willamowius
 # port OpenAM to H323Plus
 #
@@ -68,4 +71,7 @@ OPENH323DIR=$(HOME)/openh323
 endif
 
 include $(OPENH323DIR)/openh323u.mak
+
+# dependencies
+$(OBJDIR)/main.o: main.h
 
