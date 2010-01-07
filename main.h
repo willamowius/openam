@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.11  2010/01/07 15:37:59  willamowius
+ * remove unused code
+ *
  * Revision 1.10  2010/01/01 00:58:37  willamowius
  * allow setting of video maxBitRate with --videobitrate <rate>
  *
@@ -290,8 +293,8 @@ class MyH323EndPoint : public H323EndPoint
 #if OPENAM_VIDEO
     PString GetVideoOGM() const       { return videoOgm; }
     int     GetVideoSize() const      { return videoSize; }
-    int     GetVideoBitRate() const      { return videoBitRate; }
-    PBoolean    GetVideoIsPal() const     { return videoIsPal; }
+    int     GetVideoBitRate() const   { return videoBitRate; }
+    PBoolean    GetVideoIsPal() const { return videoIsPal; }
     int     GetVideoFrameRate() const { return frameRate; }
     int     GetVideoPlayMode() const  { return videoChannel; }
 #endif

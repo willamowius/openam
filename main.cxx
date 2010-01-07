@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.33  2010/01/07 15:37:57  willamowius
+ * remove unused code
+ *
  * Revision 1.32  2010/01/01 00:58:36  willamowius
  * allow setting of video maxBitRate with --videobitrate <rate>
  *
@@ -1126,7 +1129,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
 
     OpalMediaFormat::List mediaFormats = H323PluginCodecManager::GetMediaFormats();
 
-	int videoBitRate = 0; //disable setting videoBitRate.
+	videoBitRate = 0; // disable setting videoBitRate.
 	if (args.HasOption("videobitrate")) {
 		videoBitRate = args.GetOptionString("videobitrate").AsInteger();
 		videoBitRate = 1024 * PMAX(16, PMIN(2048, videoBitRate));
@@ -1317,9 +1320,13 @@ G7231_RecordFile::G7231_RecordFile(MyH323Connection & _conn, const PFilePath & _
 
 PBoolean G7231_RecordFile::WriteFrame(const void * buf, PINDEX /*len*/)
 {
+#ifdef P_VXML	// G7231_File_Codec is only avalable if VXML is enabled
   int frameLen = G7231_File_Codec::GetFrameLen(*(BYTE *)buf);
 //  cerr << "Writing G7231 " << frameLen << endl;
   return fileclass->Write(buf, frameLen);
+#else
+  return FALSE
+#endif
 }
 
 void G7231_RecordFile::DelayFrame(PINDEX /*len*/)
@@ -1519,7 +1526,7 @@ void MyH323Connection::OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu)
 
 	// reduce maxBitRate for H.261 and H.263
 	unsigned newMaxBitRate = ep.GetVideoBitRate();
-		if (newMaxBitRate > 0) {
+	if (newMaxBitRate > 0) {
 		for (PINDEX i=0; i < pdu.m_capabilityTable.GetSize(); i++) {
 			H245_Capability & cap = pdu.m_capabilityTable[i].m_capability;
 			if (cap.GetTag() == H245_VideoCapability::e_h261VideoCapability) {
@@ -2198,6 +2205,7 @@ void G7231_OGMChannel::Synchronise(PINDEX /*amount*/)
 
 PBoolean G7231_OGMChannel::ReadFrame(PINDEX /*amount*/)
 {
+#ifdef P_VXML	// G7231_File_Codec is only avalable if VXML is enabled
   if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
     return FALSE;
 
@@ -2205,6 +2213,9 @@ PBoolean G7231_OGMChannel::ReadFrame(PINDEX /*amount*/)
   frameLen = G7231_File_Codec::GetFrameLen(frameBuffer[0]);
 
   return PIndirectChannel::Read(frameBuffer.GetPointer()+1, frameLen-1);
+#else
+  return FALSE;
+#endif
 }
 
 void G7231_OGMChannel::CreateSilenceFrame(PINDEX /*amount*/)
