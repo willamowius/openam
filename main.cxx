@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.34  2010/01/07 21:30:21  willamowius
+ * fix initialization of videobitrate, use G7231File_Codec only if supplied by PTLib
+ *
  * Revision 1.33  2010/01/07 15:37:57  willamowius
  * remove unused code
  *
@@ -1529,15 +1532,15 @@ void MyH323Connection::OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu)
 	if (newMaxBitRate > 0) {
 		for (PINDEX i=0; i < pdu.m_capabilityTable.GetSize(); i++) {
 			H245_Capability & cap = pdu.m_capabilityTable[i].m_capability;
-			if (cap.GetTag() == H245_VideoCapability::e_h261VideoCapability) {
+			if (cap.GetTag() == H245_Capability::e_receiveVideoCapability) {
 				H245_VideoCapability & videocap = cap;
-				H245_H261VideoCapability & h261cap = videocap;
-				h261cap.m_maxBitRate = newMaxBitRate;
-			}
-			if (cap.GetTag() == H245_VideoCapability::e_h263VideoCapability) {
-				H245_VideoCapability & videocap = cap;
-				H245_H263VideoCapability & h263cap = videocap;
-				h263cap.m_maxBitRate = newMaxBitRate;
+				if (videocap.GetTag() == H245_VideoCapability::e_h261VideoCapability) {
+					H245_H261VideoCapability & h261cap = videocap;
+					h261cap.m_maxBitRate = newMaxBitRate;
+				} else if (videocap.GetTag() == H245_VideoCapability::e_h263VideoCapability) {
+					H245_H263VideoCapability & h263cap = videocap;
+					h263cap.m_maxBitRate = newMaxBitRate;
+				}
 			}
 		}
 	}
