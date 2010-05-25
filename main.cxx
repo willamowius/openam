@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.35  2010/01/07 21:54:32  willamowius
+ * better type checking when setting maxBitRate
+ *
  * Revision 1.34  2010/01/07 21:30:21  willamowius
  * fix initialization of videobitrate, use G7231File_Codec only if supplied by PTLib
  *
@@ -1115,7 +1118,9 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   
   if (g7231Ogm.IsEmpty() && gsmOgm.IsEmpty() && g711Ogm.IsEmpty()
                          && lpc10Ogm.IsEmpty() && speexOgm.IsEmpty()
+#if OPENAM_VIDEO
                          && videoOgm.IsEmpty()
+#endif
 			 ) {
     cerr << "Must specify at least one outgoing message" << endl;
     return FALSE;
@@ -1328,7 +1333,7 @@ PBoolean G7231_RecordFile::WriteFrame(const void * buf, PINDEX /*len*/)
 //  cerr << "Writing G7231 " << frameLen << endl;
   return fileclass->Write(buf, frameLen);
 #else
-  return FALSE
+  return FALSE;
 #endif
 }
 
@@ -1527,6 +1532,7 @@ void MyH323Connection::OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu)
 {
 	H323Connection::OnSendCapabilitySet(pdu);
 
+#ifdef OPENAM_VIDEO
 	// reduce maxBitRate for H.261 and H.263
 	unsigned newMaxBitRate = ep.GetVideoBitRate();
 	if (newMaxBitRate > 0) {
@@ -1544,6 +1550,7 @@ void MyH323Connection::OnSendCapabilitySet(H245_TerminalCapabilitySet & pdu)
 			}
 		}
 	}
+#endif
 }
 
 PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding, 
@@ -2237,6 +2244,8 @@ PBoolean G7231_OGMChannel::IsWAVFileValid(PWAVFile *chan) {
 
 ///////////////////////////////////////////////////////////////
 
+#ifdef OPENAM_VIDEO
+
 TimeLimitedVideoChannel::TimeLimitedVideoChannel(MyH323Connection & _conn, unsigned _callLimit)
 	: conn(_conn), callLimit(_callLimit)
 {
@@ -2256,4 +2265,7 @@ PBoolean TimeLimitedVideoChannel::Write(const void * buf, PINDEX len)
 	return PVideoChannel::Write(buf, len);
 }
 
+#endif
+
 ///////////////////////////////////////////////////////////////
+
