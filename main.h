@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.12  2010/01/07 21:30:21  willamowius
+ * fix initialization of videobitrate, use G7231File_Codec only if supplied by PTLib
+ *
  * Revision 1.11  2010/01/07 15:37:59  willamowius
  * remove unused code
  *
@@ -405,6 +408,8 @@ class G7231_OGMChannel : public PCM_OGMChannel
     virtual PBoolean IsWAVFileValid(PWAVFile *chan);
 };
 
+#ifdef OPENAM_VIDEO
+
 class TimeLimitedVideoChannel : public PVideoChannel
 {
 	PCLASSINFO(TimeLimitedVideoChannel, PVideoChannel);
@@ -418,6 +423,8 @@ class TimeLimitedVideoChannel : public PVideoChannel
 		unsigned callLimit;
 		PTime finishTime;
 };
+
+#endif
 
 class MyH323Connection : public H323Connection
 {

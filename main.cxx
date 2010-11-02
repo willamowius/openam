@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.36  2010/05/25 20:28:46  willamowius
+ * fix compile without video
+ *
  * Revision 1.35  2010/01/07 21:54:32  willamowius
  * better type checking when setting maxBitRate
  *
@@ -701,7 +704,8 @@ void OpenAm::Main()
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL);
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+                     PTrace::DateAndTime | PTrace::TraceLevel | PTrace::FileAndLine);
 #endif
 
   if (args.HasOption('h')) {
