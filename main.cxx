@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.37  2010/11/02 11:15:21  willamowius
+ * use same trace format as GnuGk
+ *
  * Revision 1.36  2010/05/25 20:28:46  willamowius
  * fix compile without video
  *
@@ -1206,8 +1209,10 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   // also remove other codecs we do don't have an OGM for
   removeString = removeString & "G.726";
 
+#ifdef P_VXML   // G7231_File_Capability is only avalable if VXML is enabled
   if (!g7231Ogm.IsEmpty())
     SetCapability(0, 0, new G7231_File_Capability);
+#endif
 
   capabilities.Remove(args.GetOptionString('D').Lines());
   if (!removeString.IsEmpty())
