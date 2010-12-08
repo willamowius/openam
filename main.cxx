@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.38  2010/12/08 08:49:20  willamowius
+ * avoid link error if G7231_File_Capability is not available
+ *
  * Revision 1.37  2010/11/02 11:15:21  willamowius
  * use same trace format as GnuGk
  *
@@ -647,8 +650,10 @@ void OpenAm::Main()
              "-g711-ulaw."           "-no-g711-ulaw."
              "-g711-alaw."           "-no-g711-alaw."
              "-g711message:"         "-no-g711message."
+#if OPENAM_G723
              "-g7231."               "-no-g7231."
              "-g7231message:"        "-no-g7231message."
+#endif
              "-ilbc."                "-no-ilbc."
              "-ilbcmessage:"         "-no-ilbcmessage."
              "-gsm."                 "-no-gsm."
@@ -718,8 +723,10 @@ void OpenAm::Main()
             "  -l --limit secs     : Limit recorded messages to secs duration (default " << DEFAULT_MSG_LIMIT << ")\n"
             "  --no-record         : Don't record a message\n"
             "  -m --pcmmessage fn  : Set outgoing message for PCM derived codecs (G.711/GSM) to fn\n"
+#if OPENAM_G723
             "  --g7231message fn   : Set outgoing message for G723.1 codec to fn\n"
             "  --g711message fn    : Set outgoing message for G711 codec to fn\n"
+#endif
             "  --gsmmessage fn     : Set outgoing message for GSM codec to fn\n"
             "  --lpc10message fn   : Set outgoing message for LPC10 codec to fn\n"
             "  --speexmessage fn   : Set outgoing message for Speex codec to fn\n"
@@ -967,6 +974,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   else
     SetRecordWav(TRUE);
 
+#if OPENAM_G723
   // get G.723.1 OGM
   if (args.HasOption("g7231message"))
     g7231Ogm = args.GetOptionString("g7231message");
@@ -992,7 +1000,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   else {
     cout << "Using \"" << g7231Ogm << "\" as G.723.1 outgoing message\n";
   }
-
+#endif
 
   // Get the OGM message for the 'PCM' codecs
   // Check if the file specified exists. If it does, use it.
@@ -1122,7 +1130,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   // Check for video message
   videoOgm = args.GetOptionString("videomessage");
 #endif
-  
+
   if (g7231Ogm.IsEmpty() && gsmOgm.IsEmpty() && g711Ogm.IsEmpty()
                          && lpc10Ogm.IsEmpty() && speexOgm.IsEmpty()
 #if OPENAM_VIDEO
@@ -1209,7 +1217,7 @@ PBoolean MyH323EndPoint::Initialise(PConfigArgs & args)
   // also remove other codecs we do don't have an OGM for
   removeString = removeString & "G.726";
 
-#ifdef P_VXML   // G7231_File_Capability is only avalable if VXML is enabled
+#ifdef OPENAM_G723
   if (!g7231Ogm.IsEmpty())
     SetCapability(0, 0, new G7231_File_Capability);
 #endif
@@ -1337,7 +1345,7 @@ G7231_RecordFile::G7231_RecordFile(MyH323Connection & _conn, const PFilePath & _
 
 PBoolean G7231_RecordFile::WriteFrame(const void * buf, PINDEX /*len*/)
 {
-#ifdef P_VXML	// G7231_File_Codec is only avalable if VXML is enabled
+#ifdef OPENAM_G723
   int frameLen = G7231_File_Codec::GetFrameLen(*(BYTE *)buf);
 //  cerr << "Writing G7231 " << frameLen << endl;
   return fileclass->Write(buf, frameLen);
@@ -2224,7 +2232,7 @@ void G7231_OGMChannel::Synchronise(PINDEX /*amount*/)
 
 PBoolean G7231_OGMChannel::ReadFrame(PINDEX /*amount*/)
 {
-#ifdef P_VXML	// G7231_File_Codec is only avalable if VXML is enabled
+#ifdef OPENAM_G723
   if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
     return FALSE;
 

@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log$
+ * Revision 1.13  2010/11/02 11:15:21  willamowius
+ * use same trace format as GnuGk
+ *
  * Revision 1.12  2010/01/07 21:30:21  willamowius
  * fix initialization of videobitrate, use G7231File_Codec only if supplied by PTLib
  *
@@ -222,7 +225,6 @@
 #include <h323.h>
 #include <h323pdu.h>
 #include <h245.h>
-//f#include <lid.h>
 
 #include <ptclib/pwavfile.h>
 #include <ptclib/delaychan.h>
@@ -235,6 +237,10 @@
 
 #if OPENAM_VIDEO
 #include <ptlib/video.h>
+#endif
+
+#ifdef P_VXML
+#define OPENAM_G723	1	// G7231_File_Codec is only avalable if VXML is enabled
 #endif
 
 #if !defined(P_USE_STANDARD_CXX_BOOL) && !defined(P_USE_INTEGER_BOOL)
