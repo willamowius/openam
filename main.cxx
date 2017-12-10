@@ -929,7 +929,8 @@ MyH323EndPoint::MyH323EndPoint(unsigned _callLimit,
                                const PString & _runCmd,
                                const PDirectory & _dir,
                                int   _flags)
-  : callLimit(_callLimit), runCmd(_runCmd), dir(_dir), flags(_flags)
+  : callLimit(_callLimit), runCmd(_runCmd), dir(_dir), flags(_flags),
+    recordWav(false), recordMessage(false), loopMessage(false)
 {
 #if OPENAM_VIDEO
   videoSize    = 0;
@@ -1239,8 +1240,9 @@ PCM_RecordFile::PCM_RecordFile(MyH323Connection & _conn, const PFilePath & _fn, 
 {
   recordStarted = FALSE;
   timeLimitExceeded = FALSE;
-  closed        = FALSE;
-  dataWritten   = FALSE;
+  closed = FALSE;
+  isPCM = FALSE;
+  dataWritten = FALSE;
 
   // If the file name ends in .wav then open the output as a WAV file.
   // Otherwise open it as a raw file.
@@ -1429,7 +1431,7 @@ static PINDEX FindMatch(const PStringList & list, const PString & key)
 
 
 MyH323Connection::MyH323Connection(MyH323EndPoint & _ep, unsigned callReference, unsigned _options)
-  : H323Connection(_ep, callReference, _options), ep(_ep)
+  : H323Connection(_ep, callReference, _options), ep(_ep), recordTrigger(false)
 {
   basename = psprintf("%04i%02i%02i_%02i%02i%02i", callStartTime.GetYear(), callStartTime.GetMonth(),  callStartTime.GetDay(),
                                                    callStartTime.GetHour(), callStartTime.GetMinute(), callStartTime.GetSecond());
@@ -1975,7 +1977,8 @@ PBoolean CheckWAVFileValid(PWAVFile *chan, int type) {
 PCM_OGMChannel::PCM_OGMChannel(MyH323Connection & _conn)
   : conn(_conn)
 {
-  silentCount = 20;         // wait 20 frames before playing the OGM
+  silentCount   = 20;         // wait 20 frames before playing the OGM
+  totalData     = 0;
   recordTrigger = FALSE;
   hangupTrigger = FALSE;
   closed        = FALSE;
