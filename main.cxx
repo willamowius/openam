@@ -934,6 +934,7 @@ MyH323EndPoint::MyH323EndPoint(unsigned _callLimit,
 {
 #if OPENAM_VIDEO
   videoSize    = 0;
+  videoBitRate = 0;
   videoIsPal   = TRUE;
   frameRate    = DEFAULT_VIDEO_FRAME_RATE;
   videoChannel = DEFAULT_VIDEO_MODE;
@@ -1628,11 +1629,11 @@ PBoolean MyH323Connection::OpenAudioChannel(PBoolean isEncoding,
 
   if (isEncoding) {
 
-    if (ep.GetHangupAfterPlay())
+    if (ogmChannel && ep.GetHangupAfterPlay())
       ogmChannel->SetPlayOnce();
 
-	if (ep.GetLoopMessage())
-	  ogmChannel->SetLoopMessage();
+	if (ogmChannel && ep.GetLoopMessage())
+	 ogmChannel->SetLoopMessage();
 
     if (ogm.Find("%s"))
       ogm.Replace("%s", e164Number);
